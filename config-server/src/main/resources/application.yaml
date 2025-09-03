@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: config-server
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/rnzmndz/project-site-monitoring-config.git
+          default: dev
+          clone-on-start: true
