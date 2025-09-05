@@ -24,9 +24,5 @@ COPY --from=build /app/target/discovery-service-*.jar app.jar
 # Expose Eureka Server port (default: 8761)
 EXPOSE 8761
 
-# Health check (Eureka has a built-in /actuator/health endpoint)
-HEALTHCHECK --start-period=30s --interval=30s --timeout=3s \
-  CMD curl -f http://localhost:8761/actuator/health || exit 1
-
 # Run the application
 ENTRYPOINT ["java", "-jar", "app.jar"]
