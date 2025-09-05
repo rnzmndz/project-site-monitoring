@@ -25,7 +25,7 @@ services:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${DISCOVERY_URL}
       - TZ=${TIMEZONE}
     depends_on:
-      - eureka-server
+      - discovery-service
     volumes:
       - ./config-repo:/config-repo
     healthcheck:
