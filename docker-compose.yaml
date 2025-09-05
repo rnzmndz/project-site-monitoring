@@ -54,9 +54,9 @@ services:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${DISCOVERY_URL}
       - TZ=${TIMEZONE}
     depends_on:
-      keycloak:
+#      keycloak:
+#        condition: service_healthy
+      config-server:
         condition: service_healthy
-      config-service:
-        condition: service_healthy
-      eureka-server:
+      discovery-service:
         condition: service_started
