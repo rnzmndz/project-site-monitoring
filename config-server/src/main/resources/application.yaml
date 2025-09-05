@@ -1,3 +1,6 @@
+server:
+  port: ${SERVER_PORT}
+
 spring:
   application:
     name: config-server
@@ -6,5 +9,10 @@ spring:
       server:
         git:
           uri: https://github.com/rnzmndz/project-site-monitoring-config.git
-          default-label: ${SPRING_PROFILES_ACTIVE}
+          default-label: ${SPRING_PROFILES_ACTIVE:default}
           clone-on-start: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${DISCOVERY_URL:http://localhost:8761/eureka}

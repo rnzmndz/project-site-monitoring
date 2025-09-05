@@ -7,6 +7,7 @@ services:
       - "${EUREKA_PORT}:8761"
     environment:
       - SPRING_PROFILES_ACTIVE=${ACTIVE_PROFILE}
+      - SERVER_PORT=${EUREKA_PORT}
       - TZ=${TIMEZONE}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
@@ -22,6 +23,7 @@ services:
       - "${CONFIG_PORT}:8888"
     environment:
       - SPRING_PROFILES_ACTIVE=${ACTIVE_PROFILE}
+      - SERVER_PORT=${EUREKA_PORT}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${DISCOVERY_URL}
       - TZ=${TIMEZONE}
     depends_on:
@@ -49,6 +51,7 @@ services:
 #      - KC_PASSWORD=${KC_PASSWORD}
 #      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=${JWT_ISSUER_URI}
       - SPRING_PROFILES_ACTIVE=${ACTIVE_PROFILE}
+      - SERVER_PORT=${EUREKA_PORT}
       - CLOUD_CONFIG_URL=${CLOUD_CONFIG_URL}
       - SPRING_CLOUD_CONFIG_URI=${CLOUD_CONFIG_URL}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${DISCOVERY_URL}
