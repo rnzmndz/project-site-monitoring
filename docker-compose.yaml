@@ -23,7 +23,7 @@ services:
       - "${CONFIG_PORT}:8888"
     environment:
       - SPRING_PROFILES_ACTIVE=${ACTIVE_PROFILE}
-      - SERVER_PORT=${EUREKA_PORT}
+      - SERVER_PORT=${CONFIG_PORT}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${DISCOVERY_URL}
       - TZ=${TIMEZONE}
     depends_on:
