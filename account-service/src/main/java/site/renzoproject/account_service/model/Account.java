@@ -32,7 +32,10 @@ public class Account {
     private String nameSuffix;
     private LocalDate birthDate;
     private String imageUrl;
-    private Boolean enabled;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private AccountStatus status;
 
     @Embedded
     private Address address;
