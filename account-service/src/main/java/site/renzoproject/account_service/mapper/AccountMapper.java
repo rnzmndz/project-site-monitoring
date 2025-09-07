@@ -20,6 +20,9 @@ public interface AccountMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "modifiedBy", ignore = true)
+    @Mapping(target = "address",source = "addressDto")
+    @Mapping(target = "contactInformation", source = "contactInformationDto")
+    @Mapping(target = "emergencyContact", source = "emergencyContactDto")
     Account toEntity(AccountCreateDto dto);
 
     // AccountUpdateDto to Account (for updates)
@@ -31,6 +34,9 @@ public interface AccountMapper {
     void updateAccountFromDto(AccountUpdateDto dto, @MappingTarget Account account);
 
     // Account to AccountResponseDto
+    @Mapping(target = "addressDto", source = "address")
+    @Mapping(target = "contactInformationDto", source = "contactInformation")
+    @Mapping(target = "emergencyContactDto", source = "emergencyContact")
     AccountResponseDto toResponseDto(Account account);
 
     // Account to AccountListDto
