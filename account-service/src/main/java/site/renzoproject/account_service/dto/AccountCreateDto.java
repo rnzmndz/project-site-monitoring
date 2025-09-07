@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import site.renzoproject.account_service.model.AccountStatus;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -50,7 +51,9 @@ public class AccountCreateDto {
     @Schema(description = "URL of account user's profile image", example = "https://example.com/profile.jpg", nullable = true)
     private String imageUrl;
 
-    private Boolean enabled;
+    @Schema(description = "Account status", example = "ACTIVE", defaultValue = "ACTIVE")
+    private AccountStatus status = AccountStatus.ACTIVE;
+
 
     @NotNull(message = "Address is required")
     @Schema(description = "Account user's address information")

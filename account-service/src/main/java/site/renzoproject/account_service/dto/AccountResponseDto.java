@@ -2,6 +2,7 @@ package site.renzoproject.account_service.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+import site.renzoproject.account_service.model.AccountStatus;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -37,6 +38,9 @@ public class AccountResponseDto {
 
     @Schema(description = "Account birth date", example = "1990-05-20")
     private LocalDate birthDate;
+
+    @Schema(description = "Account status", example = "ACTIVE")
+    private AccountStatus status;
 
     @Schema(description = "Account address information")
     private AddressDto addressDto;

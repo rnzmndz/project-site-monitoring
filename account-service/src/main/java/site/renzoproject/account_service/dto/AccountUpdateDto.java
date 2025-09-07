@@ -3,6 +3,7 @@ package site.renzoproject.account_service.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.*;
+import site.renzoproject.account_service.model.AccountStatus;
 
 import java.time.LocalDate;
 
@@ -42,6 +43,9 @@ public class AccountUpdateDto {
     @Past(message = "Birth date must be in the past")
     @Schema(description = "Employee's birth date", example = "1990-05-20")
     private LocalDate birthDate;
+
+    @Schema(description = "Account status", example = "ACTIVE")
+    private AccountStatus status;
 
     @NotNull(message = "Address is required")
     @Schema(description = "Employee's address information")
