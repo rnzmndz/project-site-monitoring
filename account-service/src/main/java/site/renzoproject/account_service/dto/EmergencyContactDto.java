@@ -1,0 +1,29 @@
+package site.renzoproject.account_service.dto;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+
+public class EmergencyContactDto {
+
+    @NotBlank(message = "First name is required")
+    @Size(max = 50, message = "First name must be less than 50 characters")
+    @Schema(description = "Emergency contact's first name", example = "Jane")
+    private String firstName;
+
+    @NotBlank(message = "Last name is required")
+    @Size(max = 50, message = "Last name must be less than 50 characters")
+    @Schema(description = "Emergency contact's last name", example = "Doe")
+    private String lastName;
+
+    @NotBlank(message = "Relationship is required")
+    @Size(max = 50, message = "Relationship must be less than 50 characters")
+    @Schema(description = "Emergency contact's relationship to the patient", example = "Spouse")
+    private String relationship;
+
+    @NotBlank(message = "Phone number is required")
+    @Pattern(regexp = "^\\+?[0-9]{10,15}$", message = "Invalid phone number format")
+    @Schema(description = "Emergency contact's phone number", example = "+1987654321")
+    private String phoneNumber;
+}
