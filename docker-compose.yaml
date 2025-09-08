@@ -110,7 +110,7 @@ services:
       - TZ=${TIMEZONE}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init-db:/docker-entrypoint-initdb.d
+#      - ./init-db:/docker-entrypoint-initdb.d
 
 #  # Keycloak (Identity Provider)
 #  keycloak:
@@ -140,6 +140,6 @@ services:
 #    depends_on:
 #      - postgres
 
-#  volumes:
-#    postgres_data:
+  volumes:
+    postgres_data:
 #    config-repo:
