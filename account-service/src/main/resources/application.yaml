@@ -1,1 +1,8 @@
-spring.application.name=account-service
+server:
+  port: ${ACCOUNT_PORT}
+
+spring:
+  application:
+    name: account-service
+  config:
+    import: optional:configserver:${CLOUD_CONFIG_URL:http://localhost:8888/}
