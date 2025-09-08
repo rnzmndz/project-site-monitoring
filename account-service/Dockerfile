@@ -18,7 +18,7 @@ FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 
 # Copy the built JAR
-COPY --from=build /app/target/employee-service-*.jar app.jar
+COPY --from=build /app/target/account-service-*.jar app.jar
 
 # Expose the application port (default: 8080)
 EXPOSE 8082
