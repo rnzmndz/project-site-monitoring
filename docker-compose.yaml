@@ -51,7 +51,7 @@ services:
 #      - KC_PASSWORD=${KC_PASSWORD}
 #      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=${JWT_ISSUER_URI}
       - SPRING_PROFILES_ACTIVE=${ACTIVE_PROFILE}
-      - SERVER_PORT=${EUREKA_PORT}
+      - SERVER_PORT=${API_GATEWAY_PORT}
       - CLOUD_CONFIG_URL=${CLOUD_CONFIG_URL}
       - SPRING_CLOUD_CONFIG_URI=${CLOUD_CONFIG_URL}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${DISCOVERY_URL}
@@ -64,7 +64,7 @@ services:
       discovery-service:
         condition: service_started
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:${EUREKA_PORT}/actuator/health" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:${API_GATEWAY_PORT}/actuator/health" ]
       interval: 10s
       timeout: 5s
       retries: 5
