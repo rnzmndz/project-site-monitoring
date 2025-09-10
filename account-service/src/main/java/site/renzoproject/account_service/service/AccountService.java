@@ -41,6 +41,7 @@ public class AccountService {
 
             // Map to entity
             Account account = accountMapper.toEntity(createDto);
+            account.setId(createDto.getId());
 
             // Set audit fields (if not handled by auditing)
             account.setCreatedAt(LocalDateTime.now());
