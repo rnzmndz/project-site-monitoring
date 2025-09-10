@@ -99,6 +99,11 @@ services:
         condition: service_started
       postgres:
         condition: service_started
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:${CONFIG_PORT}/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # PostgreSQL Database
   postgres:
