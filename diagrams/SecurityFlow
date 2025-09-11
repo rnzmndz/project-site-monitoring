@@ -1,0 +1,49 @@
+@startuml
+actor Client
+participant Gateway
+participant "Auth Service" as Auth
+participant "Account Service" as Account
+participant Keycloak
+
+== User Registration ==
+Client -> Gateway: POST /auth/register\n(username, email, password, ...)
+Gateway -> Auth: Forward /auth/register
+Auth -> Keycloak: Create user via Admin REST API
+Keycloak --> Auth: User created\n(Keycloak User ID)
+Auth -> Account: Create profile with Keycloak User ID
+Account --> Auth: Profile created
+Auth --> Gateway: 201 Created (user registered)
+Gateway --> Client: Success response
+
+== Forgot Password ==
+Client -> Gateway: POST /auth/forgot-password\n(email)
+Gateway -> Auth: Forward /auth/forgot-password
+Auth -> Keycloak: Trigger reset email (Admin REST API)
+Keycloak --> Auth: 200 OK
+Auth --> Gateway: Success message
+Gateway --> Client: Password reset email sent
+
+== Login Flow ==
+Client -> Gateway: POST /auth/login\n(username, password)
+Gateway -> Auth: Forward /auth/login
+Auth -> Keycloak: POST /realms/{realm}/protocol/openid-connect/token
+Keycloak --> Auth: JWT (access + refresh tokens)
+Auth --> Gateway: JWT
+Gateway --> Client: JWT
+
+== Access Protected Resource ==
+Client -> Gateway: GET /accounts/me\nAuthorization: Bearer <JWT>
+Gateway -> Account: Forward request with JWT
+Account -> Keycloak: Validate JWT (public key / introspection)
+Keycloak --> Account: Valid
+Account --> Gateway: Account details (JSON)
+Gateway --> Client: Account details (JSON)
+
+== Refresh Token ==
+Client -> Gateway: POST /auth/refresh\n(refresh_token)
+Gateway -> Auth: Forward /auth/refresh
+Auth -> Keycloak: POST /token (grant_type=refresh_token)
+Keycloak --> Auth: New JWT
+Auth --> Gateway: New JWT
+Gateway --> Client: New JWT
+@enduml
