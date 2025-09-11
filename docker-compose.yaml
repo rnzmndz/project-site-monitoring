@@ -69,6 +69,35 @@ services:
       timeout: 5s
       retries: 5
 
+  # Auth Service
+  auth-service:
+    build:
+      context: ./auth-service
+    ports:
+      - "${AUTH_PORT}:8081"
+    environment:
+      - KEYCLOAK_URL=${KEYCLOAK_URL}
+      - KC_REALM=${KC_REALM}
+      - KC_CLIENT_ID=${KC_CLIENT_ID}
+      - KC_CLIENT_SECRET=${KC_CLIENT_SECRET}
+      - KC_USERNAME=${KC_USERNAME}
+      - KC_PASSWORD=${KC_PASSWORD}
+      - SPRING_PROFILES_ACTIVE=${ACTIVE_PROFILE}
+      - CLOUD_CONFIG_URL=${CLOUD_CONFIG_URL}
+      - SPRING_CLOUD_CONFIG_URI=${CLOUD_CONFIG_URL}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_URL}
+      - TZ=${TIMEZONE}
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      config-service:
+        condition: service_started
+      eureka-server:
+        condition: service_started
+      postgres:
+        condition: service_started
+
+  # Account Service
   account-service:
     build:
       context: ./account-service
