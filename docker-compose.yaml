@@ -100,7 +100,7 @@ services:
       postgres:
         condition: service_started
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:${CONFIG_PORT}/actuator/health" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:${ACCOUNT_PORT}/actuator/health" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -128,16 +128,17 @@ services:
       - KC_DB_PASSWORD=${KC_DB_PASSWORD}
       - KC_DB=postgres
       - KC_HTTP_ENABLED=true
+      - KC_HEALTH_ENABLED=true
       - TZ=${TIMEZONE}
     ports:
       - "${KEYCLOAK_PORT}:8080"
-    command: [ "start-dev" ]
+    command: [ "start-dev", "--health-enabled=true" ]
 #    volumes:
 #      - ./init/keycloak-realm:/opt/keycloak/data/import
     depends_on:
       - postgres
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080/realms/master" ]
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 10
