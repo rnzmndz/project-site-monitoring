@@ -131,7 +131,7 @@ services:
       - TZ=${TIMEZONE}
     ports:
       - "${KEYCLOAK_PORT}:8080"
-    command: [ "start", "dev" ]
+    command: [ "start-dev" ]
 #    volumes:
 #      - ./init/keycloak-realm:/opt/keycloak/data/import
     depends_on:
