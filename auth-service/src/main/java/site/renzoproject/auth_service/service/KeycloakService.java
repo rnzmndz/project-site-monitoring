@@ -21,16 +21,16 @@ import java.util.List;
 
 @Service
 public class KeycloakService {
-    @Value("${keycloak.server-uri}")
+    @Value("${KEYCLOAK_URL}")
     private String serverUrl;
 
-    @Value("${keycloak.realm}")
+    @Value("${KC_REALM}")
     private String realm;
 
-    @Value("${keycloak.username}")
+    @Value("${KC_ADMIN_USERNAME}")
     private String username;
 
-    @Value("${keycloak.password}")
+    @Value("${KC_ADMIN_PASSWORD}")
     private String password;
 
     private Keycloak keycloak;
@@ -39,7 +39,7 @@ public class KeycloakService {
     public void init() {
         this.keycloak = KeycloakBuilder.builder()
                 .serverUrl(serverUrl)
-                .realm("myrealm") // admin try master if it is not working
+                .realm("master") // admin
                 .clientId("admin-cli")
                 .username(username)  // Keycloak admin username
                 .password(password)  // Keycloak admin password
