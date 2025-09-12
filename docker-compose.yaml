@@ -78,21 +78,22 @@ services:
     environment:
       - KEYCLOAK_URL=${KEYCLOAK_URL}
       - KC_REALM=${KC_REALM}
-      - KC_CLIENT_ID=${KC_CLIENT_ID}
+      - KC_CLIENT_ID=auth-service
       - KC_CLIENT_SECRET=${KC_CLIENT_SECRET}
       - KC_USERNAME=${KC_USERNAME}
       - KC_PASSWORD=${KC_PASSWORD}
       - SPRING_PROFILES_ACTIVE=${ACTIVE_PROFILE}
+      - SERVER_PORT=${AUTH_PORT}
       - CLOUD_CONFIG_URL=${CLOUD_CONFIG_URL}
       - SPRING_CLOUD_CONFIG_URI=${CLOUD_CONFIG_URL}
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${EUREKA_URL}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${DISCOVERY_URL}
       - TZ=${TIMEZONE}
     depends_on:
       keycloak:
         condition: service_healthy
-      config-service:
+      config-server:
         condition: service_started
-      eureka-server:
+      discovery-service:
         condition: service_started
       postgres:
         condition: service_started
