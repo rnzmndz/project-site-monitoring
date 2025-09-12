@@ -32,13 +32,12 @@ public class AuthController {
     private final AuthService authService;
     private final KeycloakService keycloakService;
 
-    @Value("${keycloak.token-uri}")
+    @Value("${JWT_ISSUER_URI}")
     private String tokenUri;
 
-    @Value("${keycloak.client-id}")
-    private String clientId;
+    private final String clientId = "auth-service";
 
-    @Value("${keycloak.client-secret}")
+    @Value("${KC_CLIENT_SECRET}")
     private String clientSecret;
 
     private final RestTemplate restTemplate = new RestTemplate();
