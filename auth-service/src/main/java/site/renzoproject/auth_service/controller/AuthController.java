@@ -32,7 +32,7 @@ public class AuthController {
     private final AuthService authService;
     private final KeycloakService keycloakService;
 
-    @Value("${JWT_ISSUER_URI}")
+    @Value("${KC_TOKEN_URI}")
     private String tokenUri;
 
     private final String clientId = "auth-service";
