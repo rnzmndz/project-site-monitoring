@@ -20,14 +20,9 @@ import java.util.stream.Collectors;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final JwtAuthenticationConverter jwtAuthenticationConverter;
-
-    public SecurityConfig(@Lazy JwtAuthenticationConverter jwtAuthenticationConverter) {
-        this.jwtAuthenticationConverter = jwtAuthenticationConverter;
-    }
-
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   JwtAuthenticationConverter jwtAuthenticationConverter) throws Exception {
         http.authorizeHttpRequests(auth -> {
             // Permit open endpoints
             auth
@@ -49,6 +44,10 @@ public class SecurityConfig {
                 .jwt(jwt -> jwt
                         .jwtAuthenticationConverter(jwtAuthenticationConverter())
                 )
+        );
+
+        http.oauth2ResourceServer(oauth2 -> oauth2
+                .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter))
         );
 
         return http.build();
@@ -96,6 +95,5 @@ public class SecurityConfig {
                     "/api/v1/accounts/*", "ROLE_ACCOUNT_DELETE"
             )
     );
-
 
 }
