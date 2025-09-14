@@ -19,8 +19,8 @@ public class FeignOAuth2Interceptor implements RequestInterceptor {
     @Override
     public void apply(RequestTemplate template) {
         OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest
-                .withClientRegistrationId("keycloak-service")
-                .principal("auth-service") // just a string ID
+                .withClientRegistrationId("auth-service")
+                .principal("auth-service")
                 .build();
 
         OAuth2AuthorizedClient client = authorizedClientManager.authorize(authorizeRequest);
