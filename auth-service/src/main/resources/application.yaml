@@ -1,21 +1,8 @@
 server:
   port: ${SERVER_PORT}
 
-springdoc:
-  swagger-ui:
-    path: /
-
 spring:
   application:
     name: auth-service
   config:
     import: optional:configserver:${CLOUD_CONFIG_URL:http://localhost:8888/}
-
-eureka:
-  client:
-    register-with-eureka: true
-    fetch-registry: true
-    service-url: # ✅ correct key
-      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
-  instance:
-    prefer-ip-address: true
