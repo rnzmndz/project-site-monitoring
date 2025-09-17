@@ -1,0 +1,73 @@
+@startuml
+skinparam componentStyle rectangle
+skinparam rectangle {
+  BackgroundColor<<infra>> #EEEBDC
+  BorderColor<<infra>> #B3A580
+  BackgroundColor<<service>> #D6EAF8
+  BorderColor<<service>> #5DADE2
+  BackgroundColor<<support>> #FDEDEC
+  BorderColor<<support>> #EC7063
+}
+
+actor Client
+
+rectangle "API Gateway" <<service>> as Gateway
+
+rectangle "Config Server" <<infra>> as Config
+rectangle "Discovery Service" <<infra>> as Discovery
+rectangle "Message Broker\n(Kafka/RabbitMQ)" <<infra>> as MQ
+
+rectangle "Auth Service" <<service>> as Auth
+rectangle "Account Service" <<service>> as Account
+rectangle "Business Service\n(Modular Monolith: Employee, Equipment...)" <<service>> as Business
+
+rectangle "Keycloak\n(IdP / OIDC)" <<infra>> as Keycloak
+
+rectangle "Monitoring\n(Prometheus, Grafana)" <<support>> as Monitoring
+rectangle "Logging\n(ELK Stack)" <<support>> as Logging
+
+' Databases per service (optional)
+database "Account DB" as AccountDB
+database "Business DB" as BusinessDB
+
+' Connections
+Client --> Gateway
+
+Gateway --> Auth
+Gateway --> Account
+Gateway --> Business
+
+Auth --> Keycloak
+Account --> AccountDB
+Business --> BusinessDB
+
+' Infra connections
+Config <-- Auth
+Config <-- Account
+Config <-- Business
+Config <-- Gateway
+
+Discovery <-- Auth
+Discovery <-- Account
+Discovery <-- Business
+Discovery <-- Gateway
+
+' Async messaging
+Business --> MQ
+Account --> MQ
+
+' Monitoring & logging
+Auth --> Monitoring
+Account --> Monitoring
+Business --> Monitoring
+Gateway --> Monitoring
+
+Auth --> Logging
+Account --> Logging
+Business --> Logging
+Gateway --> Logging
+
+' OpenFeign relation (synchronous communication)
+Auth -[#blue,dashed]-> Account : "OpenFeign REST client"
+
+@enduml
