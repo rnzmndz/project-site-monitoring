@@ -1,0 +1,21 @@
+@startuml
+actor Developer
+participant "Config Server" as CS
+participant "Git Repository" as GIT
+participant "Microservice" as MS
+
+Developer -> CS: Start Config Server
+CS -> GIT: Fetch configuration files
+GIT --> CS: Return configuration
+
+Developer -> MS: Start Microservice
+MS -> CS: Request configuration (application-{profile}.yml)
+CS --> MS: Return configuration properties
+
+MS -> MS: Load configuration\nand complete startup
+
+Developer -> MS: (Optional) Trigger /actuator/refresh
+MS -> CS: Request updated configuration
+CS --> MS: Return latest configuration
+MS -> MS: Refresh beans/properties
+@enduml
