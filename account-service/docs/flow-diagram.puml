@@ -1,0 +1,35 @@
+@startuml
+actor Client
+participant "AccountController" as Controller
+participant "AccountService" as Service
+database "Database" as DB
+
+== Create Account ==
+Client -> Controller : POST /api/v1/accounts\n(AccountCreateDto)
+Controller -> Service : createAccount(createDto)
+Service -> DB : INSERT new Account
+Service --> Controller : AccountResponseDto
+Controller --> Client : 201 Created + AccountResponseDto
+
+== Get Account By ID ==
+Client -> Controller : GET /api/v1/accounts/{id}
+Controller -> Service : getAccountById(id)
+Service -> DB : SELECT * FROM Account WHERE id = ?
+Service --> Controller : AccountResponseDto
+Controller --> Client : 200 OK + AccountResponseDto
+
+== Update Account ==
+Client -> Controller : PUT /api/v1/accounts/{id}\n(AccountUpdateDto)
+Controller -> Service : updateAccount(id, updateDto)
+Service -> DB : UPDATE Account SET ...
+Service --> Controller : AccountResponseDto
+Controller --> Client : 200 OK + AccountResponseDto
+
+== Delete Account ==
+Client -> Controller : DELETE /api/v1/accounts/{id}
+Controller -> Service : deleteAccount(id)
+Service -> DB : UPDATE Account SET status = DELETED
+Service --> Controller : void
+Controller --> Client : 204 No Content
+
+@enduml

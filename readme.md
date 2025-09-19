@@ -45,6 +45,10 @@ It demonstrates a **modern cloud-native architecture** with centralized configur
 * **Account Service (account-service)** → Handles user account data, profile management, and related operations.
 * **Business Service (business-service)** → Core domain logic — manages business entities, workflows, and main application features.
 
+**Architecture Diagram:**
+
+![Microservices Architecture](\diagrams\microservices.png)
+
 ---
 
 ## 🚀 Getting Started (Local)
@@ -89,15 +93,11 @@ Default ports:
 
 ## 📑 Microservice Documentation
 
-Each service has its own `README.md` with details like:
+Each microservice includes its own `README.md` with details (purpose, endpoints, configuration, run/debug/test instructions):
 
-* Purpose
-* Endpoints
-* Configuration
-* Run/debug/test instructions
-
-Example: [order-service/README.md](order-service/README.md)
-
+- [Auth Service](auth-service/README.md)
+- [Account Service](account-service/README.md)
+- [Business Service](business-service/README.md)
 ---
 
 ## ☸️ Deployment
