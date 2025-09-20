@@ -1,73 +1,80 @@
-@startuml
-skinparam componentStyle rectangle
-skinparam rectangle {
-  BackgroundColor<<infra>> #EEEBDC
-  BorderColor<<infra>> #B3A580
-  BackgroundColor<<service>> #D6EAF8
-  BorderColor<<service>> #5DADE2
-  BackgroundColor<<support>> #FDEDEC
-  BorderColor<<support>> #EC7063
+@startuml Microservices Architecture
+!theme plain
+
+package "Microservices Mono-Repo" {
+  [config-server] as ConfigServer
+  [discovery-service] as DiscoveryService
+  [gateway-service] as GatewayService
+  [auth-service] as AuthService
+  [account-service] as AccountService
+  [business-service] as BusinessService
+  [keycloak] as Keycloak
 }
 
-actor Client
+database "PostgreSQL" as Postgres {
+  folder "Account DB" as AccountDB
+  folder "Business DB" as BusinessDB
+  folder "User Storage" as UserStorage
+  folder "Auth Realm" as AuthRealm
+}
 
-rectangle "API Gateway" <<service>> as Gateway
+' --- Connections ---
+ConfigServer --> DiscoveryService : provides config
+ConfigServer --> GatewayService : provides config
+ConfigServer --> AuthService : provides config
+ConfigServer --> AccountService : provides config
+ConfigServer --> BusinessService : provides config
 
-rectangle "Config Server" <<infra>> as Config
-rectangle "Discovery Service" <<infra>> as Discovery
-rectangle "Message Broker\n(Kafka/RabbitMQ)" <<infra>> as MQ
+DiscoveryService --> GatewayService : registers
+DiscoveryService --> AuthService : registers
+DiscoveryService --> AccountService : registers
+DiscoveryService --> BusinessService : registers
 
-rectangle "Auth Service" <<service>> as Auth
-rectangle "Account Service" <<service>> as Account
-rectangle "Business Service\n(Modular Monolith: Employee, Equipment...)" <<service>> as Business
+GatewayService --> AuthService : routes /auth/**
+GatewayService --> AccountService : routes /api/accounts/**
+GatewayService --> BusinessService : routes /api/business/**
 
-rectangle "Keycloak\n(IdP / OIDC)" <<infra>> as Keycloak
+AuthService --> Keycloak : user management
+AuthService --> AccountService : creates accounts
 
-rectangle "Monitoring\n(Prometheus, Grafana)" <<support>> as Monitoring
-rectangle "Logging\n(ELK Stack)" <<support>> as Logging
 
-' Databases per service (optional)
-database "Account DB" as AccountDB
-database "Business DB" as BusinessDB
+AccountService --> Postgres : AccountDB access
+BusinessService --> Postgres : BusinessDB access
+Keycloak --> Postgres : UserStorage access
+Keycloak --> Postgres : AuthRealm access
 
-' Connections
-Client --> Gateway
+' --- External Clients ---
+actor "Web Client" as WebClient
+actor "Mobile Client" as MobileClient
+actor "Admin User" as AdminUser
 
-Gateway --> Auth
-Gateway --> Account
-Gateway --> Business
+WebClient --> GatewayService : API requests
+MobileClient --> GatewayService : API requests
+AdminUser --> Keycloak : admin console
 
-Auth --> Keycloak
-Account --> AccountDB
-Business --> BusinessDB
+' --- Security ---
+AuthService --> GatewayService : validates JWT tokens
+GatewayService --> AuthService : forwards auth requests
 
-' Infra connections
-Config <-- Auth
-Config <-- Account
-Config <-- Business
-Config <-- Gateway
+note right of GatewayService
+  • JWT Validation
+  • Rate Limiting
+  • CORS Management
+  • Load Balancing
+end note
 
-Discovery <-- Auth
-Discovery <-- Account
-Discovery <-- Business
-Discovery <-- Gateway
+note right of AuthService
+  • User Registration
+  • Login/Logout
+  • Token Refresh
+  • Role Management
+end note
 
-' Async messaging
-Business --> MQ
-Account --> MQ
-
-' Monitoring & logging
-Auth --> Monitoring
-Account --> Monitoring
-Business --> Monitoring
-Gateway --> Monitoring
-
-Auth --> Logging
-Account --> Logging
-Business --> Logging
-Gateway --> Logging
-
-' OpenFeign relation (synchronous communication)
-Auth -[#blue,dashed]-> Account : "OpenFeign REST client"
+note right of AccountService
+  • CRUD Operations
+  • Account Management
+  • Data Validation
+  • Search & Filter
+end note
 
 @enduml
