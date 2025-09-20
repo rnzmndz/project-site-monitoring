@@ -46,7 +46,7 @@ It demonstrates a **modern cloud-native architecture** with centralized configur
 
 **Architecture Diagram:**
 
-![Microservices Architecture](diagrams\microservices.png)
+![Microservices Architecture](diagrams/microservices.png)
 
 ---
 
