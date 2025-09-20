@@ -1,102 +1,150 @@
-# Spring Cloud Config Server with Docker
+# ⚙️ Config Server
 
-This project provides a Spring Cloud Config Server that loads configuration files from a Git repository and makes them available to microservices.
-
----
-
-## 🚀 Prerequisites
-
-* [Docker](https://www.docker.com/) installed on your system
-* A Git repository containing your configuration files (e.g., `application.yml`, `application-dev.yml`)
+The Config Server is a centralized configuration management service that provides externalized configuration for all microservices in the Project Site Monitoring system. It follows the Spring Cloud Config Server pattern, enabling consistent configuration management across all environments.
 
 ---
 
-## 🛠 Build the Docker Image
+## 🚀 Features
 
-1. Build the JAR file using Maven or Gradle:
+- Centralized Configuration: Single source of truth for all service configurations
+- Environment-Specific Profiles: Supports development, staging, and production configurations
+- Multiple Repository Backends: Configurations stored in Git repository (GitHub, GitLab, Bitbucket)
+- Encryption/Decryption: Supports encryption of sensitive properties
+- Health Checks: Provides health endpoints to monitor config server status
+- Auto-Refresh: Integrates with Spring Cloud Bus for dynamic configuration updates
+- Security: Secure access to configuration files with authentication
 
+---
+
+## 🛠 Tech Stack
+
+- Language: Java 17+
+- Framework: Spring Boot 3, Spring Cloud Config Server
+- Configuration Storage: Git Repository
+- Security: Spring Security
+- Service Discovery: Integration with Eureka Server (optional)
+- Containerization: Docker, Docker Compose
+
+---
+
+## 📖 API Endpoints
+The Config Server exposes REST APIs under these endpoints:
+- Config Server Health: http://localhost:8888/actuator/health
+- Configuration Access: http://localhost:8888/{application}/{profile}[/{label}]
+- Configuration Access (Specific): http://localhost:8888/{application}-{profile}.yml
+- Encryption/Decryption: http://localhost:8888/encrypt & http://localhost:8888/decrypt
+
+Examples:
+
+- http://localhost:8888/account-service/default - Account service default profile
+- http://localhost:8888/auth-service/dev - Auth service development profile
+- http://localhost:8888/gateway-service/prod - Gateway service production profile
+
+---
+
+## ▶️ Running with Docker Compose
+
+### 1. Build and start the config server
+From the project root:
 ```bash
-./mvnw clean package -DskipTests
+docker compose up --build config-server
 ```
 
-This will create a JAR file in the `target/` directory, e.g. `config-server-0.0.1-SNAPSHOT.jar`.
-
-2. Build the Docker image:
-
-```bash
-docker build -t config-server:latest .
-```
+### 2. Access the service
+- Config Server → http://localhost:8888
+- Health Check → http://localhost:8888/actuator/health
 
 ---
 
-## 🐳 Run the Config Server with Docker
-
-You can start the container by passing environment variables for your Git repo:
-
-```bash
-docker run -d \
-  -p 8888:8888 \
-  -e SPRING_CLOUD_CONFIG_SERVER_GIT_URI=https://github.com/your-org/your-config-repo.git \
-  -e SPRING_CLOUD_CONFIG_SERVER_GIT_CLONE_ON_START=true \
-  --name config-server \
-  config-server:latest
+## 🔧 Configuration Structure
+### Git Repository Layout
+```text
+config-repo/
+├── application.yml                      # Shared configuration for all services
+├── gateway-service/
+│   ├── gateway-service.yml              # Default profile
+│   ├── gateway-service-dev.yml          # Development profile
+│   └── gateway-service-prod.yml         # Production profile
+├── auth-service/
+│   ├── auth-service.yml
+│   ├── auth-service-dev.yml
+│   └── auth-service-prod.yml
+├── account-service/
+│   ├── account-service.yml
+│   ├── account-service-dev.yml
+│   └── account-service-prod.yml
+└── notification-service/
+    ├── notification-service.yml
+    └── notification-service-dev.yml
 ```
 
----
-
-## 🔍 Verify
-
-Once running, you can check if the server is working:
-
-```bash
-curl http://localhost:8888/application/default
-```
-
-You should see the JSON response with your configuration.
-
----
-
-## ⚙️ Example `Dockerfile`
-
-Here’s a simple Dockerfile for this project:
-
-```dockerfile
-FROM openjdk:17-jdk-slim
-VOLUME /tmp
-COPY target/config-server-0.0.1-SNAPSHOT.jar app.jar
-ENTRYPOINT ["java","-jar","/app.jar"]
-```
-
----
-
-## 📦 Docker Compose (Optional)
-
-If you want to manage this service with Docker Compose:
-
+### Example Configuration File (auth-service-dev.yml)
 ```yaml
-version: "3.8"
-services:
-  config-server:
-    build: .
-    ports:
-      - "8888:8888"
-    environment:
-      SPRING_CLOUD_CONFIG_SERVER_GIT_URI: https://github.com/your-org/your-config-repo.git
-      SPRING_CLOUD_CONFIG_SERVER_GIT_CLONE_ON_START: "true"
+server:
+  port: 8081
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/auth_db
+    username: auth_user
+    password: '{cipher}AQBv2JjJxyz...encrypted_password...'
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+keycloak:
+  auth-server-url: http://localhost:8180
+  realm: master
+  resource: auth-service
+  credentials:
+    secret: '{cipher}AQCyz123...encrypted_secret...'
+
+logging:
+  level:
+    site.renzoproject: DEBUG
 ```
-
-Run with:
-
-```bash
-docker-compose up -d
+---
+## 📂 Service Architecture & Code Structure
+```text
+/config-server
+│
+├── src/main/java/site/renzoproject/configserver/
+│   ├── config/
+│   │   ├── SecurityConfig.java          # Security configuration
+│   │   ├── GitRepositoryConfig.java     # Git repository configuration
+│   │   └── EncryptionConfig.java        # Encryption setup
+│   ├── controller/
+│   │   └── EncryptionController.java    # Custom encryption endpoints
+│   └── ConfigServerApplication.java     # Main application class
+│
+├── src/main/resources/
+│   └── application.yml                  # Config server own configuration
+│
+├── Dockerfile
+├── docker-compose.yml
+└── README.md
 ```
 
 ---
 
-## 📝 Notes
+## 🚨 Troubleshooting
 
-* Make sure your Git repository is accessible (public or with proper credentials).
-* Microservices should point to `http://<host>:8888` as their config server URL.
-* Profiles (e.g., `dev`, `prod`) will be resolved based on filenames in the Git repo (`application-dev.yml`).
+### Common Issues:
+1. Config Server Not Starting
+   - Check Git repository credentials
+   - Verify network connectivity to Git repository
+2. Client Cannot Connect
+   - Verify config server is running on port 8888
+   - Check client bootstrap configuration
+3. Encryption/Decryption Fails
+   - Verify encryption key is properly set
+   - Check keystore configuration
+### Health Check:
+```shell
+curl http://localhost:8888/actuator/health
+```
+### Test Configuration Access:
+```shell
+curl -u config-user:password http://localhost:8888/auth-service/dev
+```
 
----

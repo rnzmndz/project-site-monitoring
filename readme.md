@@ -4,7 +4,6 @@ This repository contains a collection of **Spring Boot microservices** that toge
 It demonstrates a **modern cloud-native architecture** with centralized configuration, service discovery, API gateway, and containerized deployment.
 
 🌍 **Live Demo:** [https://api.renzoproject.site](https://api.renzoproject.site)
-<!-- Replace with your actual domain -->
 
 ---
 
@@ -47,7 +46,7 @@ It demonstrates a **modern cloud-native architecture** with centralized configur
 
 **Architecture Diagram:**
 
-![Microservices Architecture](\diagrams\microservices.png)
+![Microservices Architecture](diagrams\microservices.png)
 
 ---
 
@@ -63,6 +62,7 @@ Default ports:
 
 * Config Server → `http://localhost:8888`
 * Discovery Service → `http://localhost:8761`
+* Keycloak → `http://localhost:8180`
 * Gateway Service → `http://localhost:8080`
 * Auth Service → `http://localhost:8081`
 * Account Service → `http://localhost:8082`
@@ -94,7 +94,9 @@ Default ports:
 ## 📑 Microservice Documentation
 
 Each microservice includes its own `README.md` with details (purpose, endpoints, configuration, run/debug/test instructions):
-
+- [Config Server](config-server/README.md)
+- [Discovery Service](discovery-service/README.md)
+- [Gateway Service](gateway-service/README.md)
 - [Auth Service](auth-service/README.md)
 - [Account Service](account-service/README.md)
 - [Business Service](business-service/README.md)
@@ -105,8 +107,8 @@ Each microservice includes its own `README.md` with details (purpose, endpoints,
 * Local development: `docker-compose up --build`
 * Production deployment: hosted on **[https://api.renzoproject.site](https://api.renzoproject.site)** using
 
-    * Docker + Nginx reverse proxy
-    * SSL via Let’s Encrypt
+  * Docker + Nginx reverse proxy
+  * SSL via Let’s Encrypt
 
 ---
 
