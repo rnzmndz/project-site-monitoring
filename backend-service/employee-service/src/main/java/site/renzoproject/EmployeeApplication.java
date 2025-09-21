@@ -4,7 +4,7 @@ package site.renzoproject;
  * Hello world!
  *
  */
-public class App 
+public class EmployeeApplication
 {
     public static void main( String[] args )
     {
