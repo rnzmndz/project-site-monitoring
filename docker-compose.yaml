@@ -139,6 +139,20 @@ services:
       timeout: 5s
       retries: 5
 
+  # Backend Service
+  backend-service:
+    build:
+      context: ./backend-service
+    ports:
+      - "${BACKEND_PORT}:8083"
+    environment:
+      - TZ=${TIMEZONE}
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:${BACKEND_PORT}/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
