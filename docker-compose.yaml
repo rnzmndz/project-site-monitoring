@@ -146,6 +146,7 @@ services:
     ports:
       - "${BACKEND_PORT}:8083"
     environment:
+      - SERVER_PORT=${BACKEND_PORT}
       - TZ=${TIMEZONE}
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:${BACKEND_PORT}/actuator/health" ]
