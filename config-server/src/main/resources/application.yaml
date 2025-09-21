@@ -11,6 +11,8 @@ spring:
           uri: https://github.com/rnzmndz/project-site-monitoring-config.git
           default-label: ${SPRING_PROFILES_ACTIVE:default}
           clone-on-start: true
+#          username: ${GIT_USERNAME:}
+#          password: ${GIT_PASSWORD:}
 
 eureka:
   client:

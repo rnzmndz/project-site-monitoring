@@ -57,7 +57,7 @@ docker compose up --build config-server
 ---
 
 ## 🔧 Configuration Structure
-### Git Repository Layout
+### Sample Git Repository Layout
 ```text
 config-repo/
 ├── application.yml                      # Shared configuration for all services
