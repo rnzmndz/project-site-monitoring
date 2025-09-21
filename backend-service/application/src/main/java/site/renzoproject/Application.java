@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@SpringBootApplication(scanBasePackages = "site.renzoproject")
+@SpringBootApplication
 //@EnableJpaAuditing(auditorAwareRef = "auditorAware")
 @RestController
 public class Application {
