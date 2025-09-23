@@ -34,4 +34,5 @@ public class Leave {
 
     @Column(columnDefinition = "text")
     private String reason;
+
 }
