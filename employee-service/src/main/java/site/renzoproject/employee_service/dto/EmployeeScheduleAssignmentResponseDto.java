@@ -19,4 +19,5 @@ public class EmployeeScheduleAssignmentResponseDto {
     private String scheduleDescription;
     private Instant assignedAt;
     private String role;
+
 }
