@@ -3,6 +3,7 @@ package site.renzoproject.employee_service.dto;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
@@ -20,4 +21,10 @@ public class LeaveResponseDto {
     private LocalDate endDate;
     private String status;
     private String reason;
+
+    //Auditing fields
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private String createdBy;
+    private String modifiedBy;
 }

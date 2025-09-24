@@ -3,6 +3,7 @@ package site.renzoproject.employee_service.dto;
 import lombok.*;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -21,4 +22,10 @@ public class EmployeeScheduleResponseDto {
     private String scheduleType;
     private String status;
     private Set<EmployeeScheduleAssignmentResponseDto> assignments = new HashSet<>();
+
+    //Auditing fields
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private String createdBy;
+    private String modifiedBy;
 }
