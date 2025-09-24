@@ -14,6 +14,7 @@ import java.util.UUID;
 public class LeaveRequestDto {
 
     private UUID employeeId;
+    private String employeeName;
     private String leaveType;
     private LocalDate startDate;
     private LocalDate endDate;

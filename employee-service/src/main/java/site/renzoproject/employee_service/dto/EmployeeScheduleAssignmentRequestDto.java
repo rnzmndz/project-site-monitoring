@@ -13,6 +13,7 @@ import java.util.UUID;
 public class EmployeeScheduleAssignmentRequestDto {
 
     private UUID employeeId;
+    private String employeeName;
     private UUID employeeScheduleId;
     private Instant assignedAt;
     private String role;

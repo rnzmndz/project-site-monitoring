@@ -14,7 +14,7 @@ public class EmployeeScheduleAssignmentResponseDto {
 
     private UUID id;
     private UUID employeeId;
-    private String EmployeeName;
+    private String employeeName;
     private UUID scheduleId;
     private String scheduleDescription;
     private Instant assignedAt;

@@ -13,6 +13,10 @@ import java.util.UUID;
 public class EmployeeRequestDto {
 
     private UUID accountId;
+    private String firstName;
+    private String middleName;
+    private String lastName;
+    private String nameSuffix;
     private String jobTitle;
     private String department;
     private LocalDate hiredDate;

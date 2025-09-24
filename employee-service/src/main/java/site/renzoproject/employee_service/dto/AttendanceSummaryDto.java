@@ -14,6 +14,7 @@ public class AttendanceSummaryDto {
 
     private UUID id;
     private UUID employeeId;
+    private String employeeName;
     private Instant checkIn;
     private Instant checkOut;
     private String status;

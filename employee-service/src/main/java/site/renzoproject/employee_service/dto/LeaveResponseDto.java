@@ -14,6 +14,7 @@ public class LeaveResponseDto {
 
     private UUID id;
     private UUID employeeId;
+    private String employeeName;
     private String leaveType;
     private LocalDate startDate;
     private LocalDate endDate;

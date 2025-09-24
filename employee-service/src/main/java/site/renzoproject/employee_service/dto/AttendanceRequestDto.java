@@ -13,6 +13,7 @@ import java.util.UUID;
 public class AttendanceRequestDto {
 
     private UUID employeeId;
+    private String employeeName;
     private UUID scheduleId;
     private Instant checkIn;
     private Instant checkOut;
