@@ -7,11 +7,12 @@ import site.renzoproject.employee_service.model.Employee;
 import site.renzoproject.employee_service.model.EmployeeSchedule;
 import site.renzoproject.employee_service.model.EmployeeScheduleAssignment;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring",
-        injectionStrategy = InjectionStrategy.CONSTRUCTOR,
-        uses = {EmployeeMapper.class, EmployeeScheduleMapper.class})
+        injectionStrategy = InjectionStrategy.CONSTRUCTOR)
 public interface EmployeeScheduleAssignmentMapper {
 
     // Request DTO to Entity
@@ -29,7 +30,19 @@ public interface EmployeeScheduleAssignmentMapper {
     @Mapping(target = "employeeName", source = "employee", qualifiedByName = "getEmployeeFullName")
     @Mapping(target = "scheduleId", source = "employeeSchedule.id")
     @Mapping(target = "scheduleDescription", source = "employeeSchedule.description")
-    EmployeeScheduleAssignmentResponseDto toResponseDto(EmployeeScheduleAssignment assignment);
+    EmployeeScheduleAssignmentResponseDto toResponseDto(EmployeeScheduleAssignment assignment, @Context EmployeeMapper employeeMapper);
+
+    default EmployeeScheduleAssignmentResponseDto toResponseDto(EmployeeScheduleAssignment assignment) {
+        return toResponseDto(assignment, null);
+    }
+
+    default List<EmployeeScheduleAssignmentResponseDto> toResponseDtoList(
+            List<EmployeeScheduleAssignment> assignments, @Context EmployeeMapper employeeMapper) {
+        if (assignments == null) return null;
+        return assignments.stream()
+                .map(assignment -> toResponseDto(assignment, employeeMapper))
+                .collect(Collectors.toList());
+    }
 
     // Update Entity from Request DTO
     @Mapping(target = "id", ignore = true)
@@ -61,12 +74,10 @@ public interface EmployeeScheduleAssignmentMapper {
 
     // Helper method to get employee full name (reusing from EmployeeMapper)
     @Named("getEmployeeFullName")
-    default String getEmployeeFullName(Employee employee) {
+    default String getEmployeeFullName(Employee employee, @Context EmployeeMapper employeeMapper) {
         if (employee == null) {
             return null;
         }
-        // In actual usage, this would be injected by Spring
-        EmployeeMapper employeeMapper = new EmployeeMapperImpl();
         return employeeMapper.getFullName(employee);
     }
 }

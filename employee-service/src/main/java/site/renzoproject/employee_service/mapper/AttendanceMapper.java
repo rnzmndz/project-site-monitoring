@@ -8,11 +8,12 @@ import site.renzoproject.employee_service.model.Attendance;
 import site.renzoproject.employee_service.model.Employee;
 import site.renzoproject.employee_service.model.EmployeeSchedule;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring",
-        injectionStrategy = InjectionStrategy.CONSTRUCTOR,
-        uses = {EmployeeMapper.class, EmployeeScheduleMapper.class})
+        injectionStrategy = InjectionStrategy.CONSTRUCTOR)
 public interface AttendanceMapper {
 
     // Request DTO to Entity
@@ -29,12 +30,31 @@ public interface AttendanceMapper {
     @Mapping(target = "employeeId", source = "employee.id")
     @Mapping(target = "employeeName", source = "employee", qualifiedByName = "getEmployeeFullName")
     @Mapping(target = "scheduleId", source = "employeeSchedule.id")
-    AttendanceResponseDto toResponseDto(Attendance attendance);
+    AttendanceResponseDto toResponseDto(Attendance attendance, @Context EmployeeMapper employeeMapper);
 
     // Entity to Summary DTO
     @Mapping(target = "employeeId", source = "employee.id")
     @Mapping(target = "employeeName", source = "employee", qualifiedByName = "getEmployeeFullName")
-    AttendanceSummaryDto toSummaryDto(Attendance attendance);
+    AttendanceSummaryDto toSummaryDto(Attendance attendance, @Context EmployeeMapper employeeMapper);
+
+    default AttendanceResponseDto toResponseDto(Attendance attendance) {
+        return toResponseDto(attendance, null);
+    }
+
+    default AttendanceSummaryDto toSummaryDto(Attendance attendance) {
+        return toSummaryDto(attendance, null);
+    }
+
+    default List<AttendanceResponseDto> toResponseDtoList(List<Attendance> attendances, @Context EmployeeMapper employeeMapper) {
+        if (attendances == null) return null;
+        return attendances.stream()
+                .map(attendance -> toResponseDto(attendance, employeeMapper))
+                .collect(Collectors.toList());
+    }
+
+    default List<AttendanceResponseDto> toResponseDtoList(List<Attendance> attendances) {
+        return toResponseDtoList(attendances, null);
+    }
 
     // Update Entity from Request DTO
     @Mapping(target = "id", ignore = true)
@@ -66,11 +86,10 @@ public interface AttendanceMapper {
 
     // Reuse the full name method from EmployeeMapper
     @Named("getEmployeeFullName")
-    default String getEmployeeFullName(Employee employee) {
+    default String getEmployeeFullName(Employee employee, @Context EmployeeMapper employeeMapper) {
         if (employee == null) {
             return null;
         }
-        EmployeeMapper employeeMapper = new EmployeeMapperImpl(); // This will be injected by Spring in actual usage
         return employeeMapper.getFullName(employee);
     }
 }

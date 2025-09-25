@@ -12,8 +12,7 @@ import site.renzoproject.employee_service.model.EmployeeSchedule;
 import java.util.UUID;
 
 @Mapper(componentModel = "spring",
-        injectionStrategy = InjectionStrategy.CONSTRUCTOR,
-        uses = {EmployeeScheduleAssignmentMapper.class})
+        injectionStrategy = InjectionStrategy.CONSTRUCTOR)
 public interface EmployeeScheduleMapper {
 
     // Request DTO to Entity
