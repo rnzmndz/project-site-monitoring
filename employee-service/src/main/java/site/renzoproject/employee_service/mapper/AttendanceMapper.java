@@ -75,7 +75,7 @@ public interface AttendanceMapper {
     // Reuse the full name method from EmployeeMapper
     @Named("getEmployeeFullName")
     default String getEmployeeFullName(Employee employee, @Context EmployeeMapper employeeMapper) {
-        if (employee == null) {
+        if (employee == null || employeeMapper == null) {
             return null;
         }
         return employeeMapper.getFullName(employee);
