@@ -55,11 +55,6 @@ public interface LeaveMapper {
         return employeeMapper.getFullName(employee);
     }
 
-    // Default method for simpler usage (without @Context)
-    default LeaveResponseDto toResponseDto(Leave leave) {
-        return toResponseDto(leave, null);
-    }
-
     // Batch mapping method
     default List<LeaveResponseDto> toResponseDtoList(List<Leave> leaves, @Context EmployeeMapper employeeMapper) {
         if (leaves == null) {
@@ -68,11 +63,6 @@ public interface LeaveMapper {
         return leaves.stream()
                 .map(leave -> toResponseDto(leave, employeeMapper))
                 .collect(Collectors.toList());
-    }
-
-    // Convenience method without context
-    default List<LeaveResponseDto> toResponseDtoList(List<Leave> leaves) {
-        return toResponseDtoList(leaves, null);
     }
 
     // After mapping callback

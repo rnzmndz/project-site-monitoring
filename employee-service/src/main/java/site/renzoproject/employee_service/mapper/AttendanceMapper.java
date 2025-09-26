@@ -37,23 +37,11 @@ public interface AttendanceMapper {
     @Mapping(target = "employeeName", source = "employee", qualifiedByName = "getEmployeeFullName")
     AttendanceSummaryDto toSummaryDto(Attendance attendance, @Context EmployeeMapper employeeMapper);
 
-    default AttendanceResponseDto toResponseDto(Attendance attendance) {
-        return toResponseDto(attendance, null);
-    }
-
-    default AttendanceSummaryDto toSummaryDto(Attendance attendance) {
-        return toSummaryDto(attendance, null);
-    }
-
     default List<AttendanceResponseDto> toResponseDtoList(List<Attendance> attendances, @Context EmployeeMapper employeeMapper) {
         if (attendances == null) return null;
         return attendances.stream()
                 .map(attendance -> toResponseDto(attendance, employeeMapper))
                 .collect(Collectors.toList());
-    }
-
-    default List<AttendanceResponseDto> toResponseDtoList(List<Attendance> attendances) {
-        return toResponseDtoList(attendances, null);
     }
 
     // Update Entity from Request DTO

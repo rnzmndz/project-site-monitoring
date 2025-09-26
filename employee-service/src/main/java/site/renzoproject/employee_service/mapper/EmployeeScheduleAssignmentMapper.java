@@ -32,10 +32,6 @@ public interface EmployeeScheduleAssignmentMapper {
     @Mapping(target = "scheduleDescription", source = "employeeSchedule.description")
     EmployeeScheduleAssignmentResponseDto toResponseDto(EmployeeScheduleAssignment assignment, @Context EmployeeMapper employeeMapper);
 
-    default EmployeeScheduleAssignmentResponseDto toResponseDto(EmployeeScheduleAssignment assignment) {
-        return toResponseDto(assignment, null);
-    }
-
     default List<EmployeeScheduleAssignmentResponseDto> toResponseDtoList(
             List<EmployeeScheduleAssignment> assignments, @Context EmployeeMapper employeeMapper) {
         if (assignments == null) return null;
