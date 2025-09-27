@@ -29,8 +29,14 @@ public interface LeaveMapper {
     LeaveResponseDto toResponseDto(Leave leave, @Context EmployeeMapper employeeMapper);
 
     // Update Entity from Request DTO
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.SET_TO_NULL)
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "employee", source = "employeeId", qualifiedByName = "mapEmployeeIdToEmployee")
+    @Mapping(
+            target = "employee",
+            source = "employeeId",
+            qualifiedByName = "mapEmployeeIdToEmployee",
+            nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.SET_TO_NULL // 👈 override here
+    )
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "createdBy", ignore = true)
@@ -67,9 +73,25 @@ public interface LeaveMapper {
 
     // After mapping callback
     @AfterMapping
-    default void afterMapping(LeaveRequestDto leaveRequestDto, @MappingTarget Leave leave) {
+    default void afterMapping(LeaveRequestDto leaveRequestDto, @MappingTarget Leave.LeaveBuilder builder) {
         // Set default status if not provided
         if (leaveRequestDto.getStatus() == null || leaveRequestDto.getStatus().trim().isEmpty()) {
+            builder.status("REQUESTED");
+        }
+
+        // Validate date range
+        if (leaveRequestDto.getStartDate() != null && leaveRequestDto.getEndDate() != null) {
+            if (leaveRequestDto.getEndDate().isBefore(leaveRequestDto.getStartDate())) {
+                throw new IllegalArgumentException("End date cannot be before start data");
+            }
+        }
+    }
+
+    @AfterMapping
+    default void afterUpdating(LeaveRequestDto dto, @MappingTarget Leave leave) {
+        // Only set default if both DTO and entity status are null/empty
+        if ((dto.getStatus() == null || dto.getStatus().trim().isEmpty()) &&
+                (leave.getStatus() == null || leave.getStatus().trim().isEmpty())) {
             leave.setStatus("REQUESTED");
         }
     }
