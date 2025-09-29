@@ -2,6 +2,9 @@ package site.renzoproject.account_service.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -28,6 +31,7 @@ public class AccountService {
 
     
     @Transactional
+    @CachePut(value = "account", key = "#result.id")
     public AccountResponseDto createAccount(AccountCreateDto createDto) {
         try {
             log.info("Creating new account for: {} {}", createDto.getFirstName(), createDto.getLastName());
@@ -64,6 +68,7 @@ public class AccountService {
 
     
     @Transactional(readOnly = true)
+    @Cacheable(value = "account", key = "#id")
     public AccountResponseDto getAccountById(UUID id) {
         try {
             log.debug("Fetching account with ID: {}", id);
@@ -141,6 +146,7 @@ public class AccountService {
 
     
     @Transactional
+    @CachePut(value = "account", key = "#id")
     public AccountResponseDto updateAccount(UUID id, AccountUpdateDto updateDto) {
         try {
             log.info("Updating account with ID: {}", id);
@@ -176,6 +182,7 @@ public class AccountService {
 
 
     @Transactional
+    @CacheEvict(value = "account", key = "#id")
     public void deleteAccount(UUID id) {
         try {
             log.info("Soft deleting account with ID: {}", id);
@@ -253,6 +260,7 @@ public class AccountService {
     }
 
     @Transactional
+    @CachePut(value = "account", key = "#id")
     public AccountResponseDto updateAccountStatus(UUID id, AccountStatus status) {
         String action = status.name().toLowerCase();
         return updateAccountStatus(id, status, action);
