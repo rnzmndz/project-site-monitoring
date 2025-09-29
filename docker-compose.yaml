@@ -14,6 +14,8 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+    networks:
+      - auth_net
 
   # Config Server (Spring Cloud Config)
   config-server:
@@ -35,6 +37,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - auth_net
 
   # API Gateway
   gateway-service:
@@ -58,8 +62,6 @@ services:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${DISCOVERY_URL}
       - TZ=${TIMEZONE}
     depends_on:
-      keycloak:
-        condition: service_healthy
       config-server:
         condition: service_healthy
       discovery-service:
@@ -69,6 +71,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - auth_net
 
   # Auth Service
   auth-service:
@@ -92,14 +96,12 @@ services:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${DISCOVERY_URL}
       - TZ=${TIMEZONE}
     depends_on:
-      keycloak:
-        condition: service_healthy
       config-server:
         condition: service_started
       discovery-service:
         condition: service_started
-      postgres:
-        condition: service_started
+    networks:
+      - auth_net
 
   # Account Service
   account-service:
@@ -125,31 +127,32 @@ services:
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
       - TZ=${TIMEZONE}
     depends_on:
-      keycloak:
-        condition: service_healthy
       config-server:
         condition: service_healthy
       discovery-service:
-        condition: service_started
-      postgres:
         condition: service_started
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:${ACCOUNT_PORT}/actuator/health" ]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - auth_net
 
   # Backend Service
-  backend-service:
-    build:
-      context: ./backend-service
-    ports:
-      - "${BACKEND_PORT}:8083"
-    environment:
-      - SERVER_PORT=${BACKEND_PORT}
-      - TZ=${TIMEZONE}
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:${BACKEND_PORT}/actuator/health" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+  # backend-service:
+  #   build:
+  #     context: ./backend-service
+  #   ports:
+  #     - "${BACKEND_PORT}:8083"
+  #   environment:
+  #     - SERVER_PORT=${BACKEND_PORT}
+  #     - TZ=${TIMEZONE}
+  #   healthcheck:
+  #     test: [ "CMD", "curl", "-f", "http://localhost:${BACKEND_PORT}/actuator/health" ]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+networks:
+  auth_net:
+    external: true
