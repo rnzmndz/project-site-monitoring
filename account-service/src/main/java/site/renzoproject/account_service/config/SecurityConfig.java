@@ -26,6 +26,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> {
             // Permit open endpoints
             auth
+                    .requestMatchers("/actuator/health").permitAll()
                     .requestMatchers("/public/**", "/debug").permitAll()
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll();
 
