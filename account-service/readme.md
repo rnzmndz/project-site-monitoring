@@ -12,6 +12,7 @@ The Account Service is a Spring Boot microservice responsible for managing user 
 - **Exception Handling:** Custom exceptions with proper error responses
 - **Audit Logging:** Automatic tracking of creation and modification timestamps
 - **DTO Mapping:** Efficient data transfer using MapStruct mappers
+- **Redis Caching:** High-performance caching for frequently accessed accounts and search results
 
 ---
 
@@ -19,6 +20,7 @@ The Account Service is a Spring Boot microservice responsible for managing user 
 - **Language:** Java 17+
 - **Frameworks:** Spring Boot (Web, Data JPA, Validation)
 - **Database:** PostgreSQL
+- **Cache:** Redis
 - **API Documentation:** Swagger / OpenAPI 3
 - **Mapping:** MapStruct
 - **Utilities:** Lombok
@@ -54,17 +56,17 @@ docker compose up --build account-service
 
 **POST /api/v1/accounts** → ValidationService checks uniqueness → AccountService creates entity → Mappers convert to DTO → returns AccountResponseDto
 
-### Get Account By ID
+### Get Account By ID (with Redis caching)
 
-**GET /api/v1/accounts/{id}** → AccountRepository.findById() → throws AccountNotFoundException if not found → returns AccountResponseDto
+**GET /api/v1/accounts/{id}** → Check Redis cache → If cached, return immediately → If not, AccountRepository.findById() → Store in Redis → return AccountResponseDto
 
-### Update Account
+### Update Account (with cache eviction)
 
-**PUT /api/v1/accounts/{id}** → validates input → checks for duplicate email/phone → updates entity → returns updated AccountResponseDto
+**PUT /api/v1/accounts/{id}** → validates input → checks for duplicate email/phone → updates entity → evicts cached data → returns updated AccountResponseDto
 
-### Search Accounts
+### Search Accounts (with cacheable results)
 
-**GET /api/v1/accounts/search** → accepts multiple filters → returns AccountPage with pagination info
+**GET /api/v1/accounts/search** → accepts multiple filters → cacheable pagination results → returns AccountPage with pagination info
 
 ## 📂 Service Architecture & Code Structure
 
@@ -74,45 +76,28 @@ docker compose up --build account-service
 ├── src/main/java/site/renzoproject/auth_service/
 │   ├── config/
 │   │   ├── OpenApiConfig.java           # Swagger/OpenAPI configuration
+│   │   ├── RedisConfig.java             # Redis configuration and cache setup
 │   │   └── SecurityConfig.java          # Security configuration
 │   ├── controller/
 │   │   ├── GlobalExceptionHandler.java  # Centralized exception handling
 │   │   └── AccountController.java       # REST API endpoints
 │   ├── dto/
-│   │   ├── AccountCreateDto.java        # Request DTO for creation
-│   │   ├── AccountListDto.java          # DTO for listing operations
-│   │   ├── AccountPage.java             # Pagination response wrapper
-│   │   ├── AccountResponseDto.java      # Response DTO for single account
-│   │   ├── AccountUpdateDto.java        # Request DTO for updates
-│   │   ├── AddressDto.java              # Embedded address DTO
-│   │   ├── ContactInformationDto.java   # Contact info DTO
-│   │   └── EmergencyContactDto.java     # Emergency contact DTO
+│   │   └── [DTO files unchanged]
 │   ├── exception/
-│   │   ├── AccountDeletionException.java# Exception for deletion issues
-│   │   ├── AccountNotFoundException.java# When account is not found
-│   │   ├── DuplicateEmailException.java # Email uniqueness violation
-│   │   ├── DuplicatePhoneException.java # Phone uniqueness violation
-│   │   └── ValidationException.java     # General validation errors
+│   │   └── [Exception files unchanged]
 │   ├── mapper/
-│   │   ├── AccountMapper.java           # MapStruct mapper for Account
-│   │   ├── AddressMapper.java           # Mapper for Address
-│   │   ├── ContactInformationMapper.java# Mapper for ContactInfo
-│   │   └── EmergencyContactMapper.java  # Mapper for EmergencyContact
+│   │   └── [Mapper files unchanged]
 │   ├── model/
-│   │   ├── Account.java                 # Main Account entity
-│   │   ├── AccountStatus.java           # Status enum (ACTIVE, INACTIVE, etc.)
-│   │   ├── Address.java                 # Embedded address entity
-│   │   ├── ContactInformation.java      # Embedded contact info entity
-│   │   └── EmergencyContact.java        # Embedded emergency contact entity
+│   │   └── [Model files unchanged]
 │   ├── repository/
 │   │   └── AccountRepository.java       # JPA Repository for Account
 │   └── service/
-│       ├── AccountService.java          # Main business logic
+│       ├── AccountService.java          # Main business logic with caching
 │       ├── AuditorAwareImpl.java        # Audit awareness for created/modified
 │       └── ValidationService.java       # Validation and uniqueness checks
 │
 ├── src/main/resources/
-│   └── application.yml                  # Application configuration
+│   └── application.yml                  # Application configuration with Redis
 │
 ├── Dockerfile
 └── README.md
