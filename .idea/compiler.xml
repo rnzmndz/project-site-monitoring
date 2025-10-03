@@ -11,9 +11,8 @@
         <module name="auth-service" />
         <module name="discovery-service" />
         <module name="gateway-service" />
-        <module name="employee-service" />
       </profile>
-      <profile name="Annotation profile for account-service" enabled="true">
+      <profile name="Annotation profile for employee-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -23,6 +22,7 @@
           <entry name="$MAVEN_REPOSITORY$/org/mapstruct/mapstruct/1.5.5.Final/mapstruct-1.5.5.Final.jar" />
         </processorPath>
         <module name="account-service" />
+        <module name="employee-service" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -34,11 +34,11 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="account-service" options="-parameters" />
       <module name="application" options="-parameters" />
-      <module name="auth-service" options="" />
+      <module name="auth-service" options="-parameters" />
       <module name="backend-service" options="-parameters" />
       <module name="config-server" options="" />
       <module name="discovery-service" options="" />
-      <module name="employee-service" options="" />
+      <module name="employee-service" options="-parameters" />
       <module name="gateway-service" options="" />
     </option>
   </component>
