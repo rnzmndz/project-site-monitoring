@@ -9,10 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import site.renzoproject.employee_service.dto.ErrorResponse;
-import site.renzoproject.employee_service.exception.AttendanceNotFoundException;
-import site.renzoproject.employee_service.exception.DuplicateEmployeeException;
-import site.renzoproject.employee_service.exception.EmployeeNotFoundException;
-import site.renzoproject.employee_service.exception.InvalidAttendanceException;
+import site.renzoproject.employee_service.exception.*;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -133,5 +130,35 @@ public class GlobalExceptionHandler {
                 .build();
 
         return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(EmployeeScheduleNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleEmployeeScheduleNotFoundException(EmployeeScheduleNotFoundException ex, WebRequest request) {
+        log.warn("Employee schedule not found: {}", ex.getMessage());
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.NOT_FOUND.value())
+                .error(HttpStatus.NOT_FOUND.getReasonPhrase())
+                .message(ex.getMessage())
+                .path(request.getDescription(false))
+                .build();
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(InvalidScheduleException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidScheduleException(InvalidScheduleException ex, WebRequest request) {
+        log.warn("Invalid schedule: {}", ex.getMessage());
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(ex.getMessage())
+                .path(request.getDescription(false))
+                .build();
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 }
