@@ -139,6 +139,42 @@ services:
     networks:
       - auth_net
 
+  # Employee Service
+  employee-service:
+    build:
+      context: ./employee-service
+    ports:
+      - "${EMPLOYEE_PORT}:8083"
+    environment:
+      - KEYCLOAK_URL=${KEYCLOAK_URL}
+      - KC_REALM=${KC_REALM}
+      - KC_CLIENT_ID=employee-service
+      #      - KC_CLIENT_SECRET=${KC_CLIENT_SECRET}
+      #      - KC_USERNAME=${KC_USERNAME}
+      #      - KC_PASSWORD=${KC_PASSWORD}
+      - JWT_ISSUER_URI=${JWT_ISSUER_URI}
+      - SPRING_PROFILES_ACTIVE=${ACTIVE_PROFILE}
+      - SERVER_PORT=${EMPLOYEE_PORT}
+      - CLOUD_CONFIG_URL=${CLOUD_CONFIG_URL}
+      - SPRING_CLOUD_CONFIG_URI=${CLOUD_CONFIG_URL}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=${DISCOVERY_URL}
+      - SPRING_DATASOURCE_URL=${DB_URL}/employee_database
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - TZ=${TIMEZONE}
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-service:
+        condition: service_started
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:${EMPLOYEE_PORT}/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - auth_net
+
   # Backend Service
   # backend-service:
   #   build:
