@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import site.renzoproject.account_service.model.AccountStatus;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -14,7 +15,9 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 @Schema(description = "Response object for an account")
-public class AccountResponseDto {
+public class AccountResponseDto implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     @Schema(description = "Account id", example = "asdf234fffq23wer234faf")
     private UUID id;
 
