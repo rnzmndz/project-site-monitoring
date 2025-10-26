@@ -1,5 +1,6 @@
 package site.renzoproject.account_service.config;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -20,16 +21,23 @@ import java.time.Duration;
 public class RedisConfig {
 
     @Bean
-    public RedisCacheConfiguration cacheConfiguration(ObjectMapper objectMapper) {
-        // Register the JavaTimeModule for LocalDateTime and friends
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    public RedisCacheConfiguration cacheConfiguration() {
+        ObjectMapper redisObjectMapper = new ObjectMapper();
+        redisObjectMapper.registerModule(new JavaTimeModule());
+        redisObjectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        // 👇 Enable type information for all non-final types
+        redisObjectMapper.activateDefaultTyping(
+                redisObjectMapper.getPolymorphicTypeValidator(),
+                ObjectMapper.DefaultTyping.NON_FINAL,
+                JsonTypeInfo.As.PROPERTY
+        );
 
         return RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofMinutes(10))
                 .serializeValuesWith(
                         RedisSerializationContext.SerializationPair
-                                .fromSerializer(new GenericJackson2JsonRedisSerializer(objectMapper))
+                                .fromSerializer(new GenericJackson2JsonRedisSerializer(redisObjectMapper))
                 );
     }
 
