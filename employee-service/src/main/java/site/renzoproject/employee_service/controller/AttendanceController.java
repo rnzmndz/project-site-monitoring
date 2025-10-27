@@ -1,5 +1,10 @@
 package site.renzoproject.employee_service.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,362 +15,259 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import site.renzoproject.employee_service.dto.AttendancePage;
 import site.renzoproject.employee_service.dto.AttendanceRequestDto;
 import site.renzoproject.employee_service.dto.AttendanceResponseDto;
 import site.renzoproject.employee_service.dto.AttendanceSummaryDto;
 import site.renzoproject.employee_service.service.AttendanceService;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/attendances")
+@Tag(name = "Attendance Management", description = "Endpoints for managing employee attendance records")
 public class AttendanceController {
 
     private final AttendanceService attendanceService;
 
-    // CREATE operations
+    // --------------------------------------------------
+    // CREATE OPERATIONS
+    // --------------------------------------------------
 
-    /**
-     * Create a new attendance record
-     */
+    @Operation(summary = "Create attendance", description = "Create a new attendance record for an employee.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Attendance created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request data")
+    })
     @PostMapping
     public ResponseEntity<AttendanceResponseDto> createAttendance(
             @Valid @RequestBody AttendanceRequestDto requestDto) {
-        log.info("POST /api/v1/attendances - Creating new attendance record for employee: {}",
-                requestDto.getEmployeeId());
 
-        AttendanceResponseDto createdAttendance = attendanceService.createAttendance(requestDto);
-
-        log.info("Successfully created attendance record with ID: {}", createdAttendance.getId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdAttendance);
+        log.info("Creating new attendance for employee: {}", requestDto.getEmployeeId());
+        AttendanceResponseDto created = attendanceService.createAttendance(requestDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    /**
-     * Bulk create attendance records
-     */
+    @Operation(summary = "Bulk create attendances", description = "Create multiple attendance records at once.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Attendances created successfully")
+    })
     @PostMapping("/bulk")
-    public ResponseEntity<Void> bulkCreateAttendances(
+    public ResponseEntity<Map<String, Object>> bulkCreateAttendances(
             @Valid @RequestBody List<AttendanceRequestDto> requestDtos) {
-        log.info("POST /api/v1/attendances/bulk - Bulk creating {} attendance records", requestDtos.size());
 
+        log.info("Bulk creating {} attendance records", requestDtos.size());
         attendanceService.bulkCreateAttendances(requestDtos);
-
-        log.info("Successfully bulk created {} attendance records", requestDtos.size());
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(Map.of("createdCount", requestDtos.size()));
     }
 
-    /**
-     * Check-in for an employee
-     */
+    @Operation(summary = "Check-in employee", description = "Record the start of an employee's work attendance.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Check-in recorded successfully")
+    })
     @PostMapping("/check-in")
     public ResponseEntity<AttendanceResponseDto> checkIn(
-            @RequestParam UUID employeeId,
-            @RequestParam(required = false) UUID scheduleId,
-            @RequestParam(required = false) String source) {
-        log.info("POST /api/v1/attendances/check-in - Check-in for employee: {}, schedule: {}",
-                employeeId, scheduleId);
+            @Parameter(description = "Employee ID") @RequestParam UUID employeeId,
+            @Parameter(description = "Associated schedule ID (optional)") @RequestParam(required = false) UUID scheduleId,
+            @Parameter(description = "Source (e.g., mobile, kiosk)") @RequestParam(required = false) String source) {
 
         AttendanceResponseDto attendance = attendanceService.checkIn(employeeId, scheduleId, source);
-
-        log.info("Successfully recorded check-in for employee: {}", employeeId);
         return ResponseEntity.status(HttpStatus.CREATED).body(attendance);
     }
 
-    /**
-     * Check-out for an employee
-     */
+    @Operation(summary = "Check-out employee", description = "Record the end of an employee's work attendance.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Check-out recorded successfully")
+    })
     @PostMapping("/check-out")
     public ResponseEntity<AttendanceResponseDto> checkOut(
-            @RequestParam UUID employeeId,
-            @RequestParam(required = false) String source) {
-        log.info("POST /api/v1/attendances/check-out - Check-out for employee: {}", employeeId);
+            @Parameter(description = "Employee ID") @RequestParam UUID employeeId,
+            @Parameter(description = "Source (e.g., mobile, kiosk)") @RequestParam(required = false) String source) {
 
         AttendanceResponseDto attendance = attendanceService.checkOut(employeeId, source);
-
-        log.info("Successfully recorded check-out for employee: {}", employeeId);
         return ResponseEntity.ok(attendance);
     }
 
-    /**
-     * Mark employee as absent
-     */
+    @Operation(summary = "Mark as absent", description = "Mark an employee as absent for a specific date.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Marked as absent successfully")
+    })
     @PostMapping("/absent")
     public ResponseEntity<AttendanceResponseDto> markAsAbsent(
-            @RequestParam UUID employeeId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @RequestParam(required = false) String reason) {
-        log.info("POST /api/v1/attendances/absent - Marking employee: {} as absent on date: {}",
-                employeeId, date);
+            @Parameter(description = "Employee ID") @RequestParam UUID employeeId,
+            @Parameter(description = "Date of absence") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @Parameter(description = "Reason for absence (optional)") @RequestParam(required = false) String reason) {
 
         AttendanceResponseDto absence = attendanceService.markAsAbsent(employeeId, date, reason);
-
-        log.info("Successfully marked employee: {} as absent on date: {}", employeeId, date);
         return ResponseEntity.status(HttpStatus.CREATED).body(absence);
     }
 
-    // READ operations
+    // --------------------------------------------------
+    // READ OPERATIONS
+    // --------------------------------------------------
 
-    /**
-     * Get attendance by ID
-     */
+    @Operation(summary = "Get attendance by ID", description = "Retrieve a specific attendance record by its ID.")
     @GetMapping("/{id}")
     public ResponseEntity<AttendanceResponseDto> getAttendanceById(@PathVariable UUID id) {
-        log.info("GET /api/v1/attendances/{} - Fetching attendance by ID", id);
-
         AttendanceResponseDto attendance = attendanceService.getAttendanceById(id);
-
-        log.info("Successfully found attendance with ID: {}", id);
         return ResponseEntity.ok(attendance);
     }
 
-    /**
-     * Get all attendances (paginated)
-     */
+    @Operation(summary = "Get all attendances (paginated)", description = "Retrieve all attendance records with pagination support.")
     @GetMapping
-    public ResponseEntity<Page<AttendanceResponseDto>> getAllAttendances(
+    public ResponseEntity<AttendancePage> getAllAttendances(
             @PageableDefault(size = 20, sort = "checkIn") Pageable pageable) {
-        log.info("GET /api/v1/attendances - Fetching all attendances with pagination: {}", pageable);
 
-        Page<AttendanceResponseDto> attendances = attendanceService.getAllAttendances(pageable);
-
-        log.info("Returning {} attendances out of {}",
-                attendances.getContent().size(), attendances.getTotalElements());
-        return ResponseEntity.ok(attendances);
+        Page<AttendanceResponseDto> page = attendanceService.getAllAttendances(pageable);
+        AttendancePage customPage = new AttendancePage(page.getContent(), pageable, page.getTotalElements());
+        return ResponseEntity.ok(customPage);
     }
 
-    /**
-     * Get all attendances (non-paginated)
-     */
+    @Operation(summary = "Get all attendances", description = "Retrieve all attendance records without pagination.")
     @GetMapping("/all")
     public ResponseEntity<List<AttendanceResponseDto>> getAllAttendances() {
-        log.info("GET /api/v1/attendances/all - Fetching all attendances");
-
         List<AttendanceResponseDto> attendances = attendanceService.getAllAttendances();
-
-        log.info("Returning {} attendances", attendances.size());
         return ResponseEntity.ok(attendances);
     }
 
-    /**
-     * Get attendances by employee
-     */
+    @Operation(summary = "Get employee attendances", description = "Retrieve all attendance records for a specific employee.")
     @GetMapping("/employee/{employeeId}")
-    public ResponseEntity<List<AttendanceResponseDto>> getAttendancesByEmployee(
-            @PathVariable UUID employeeId) {
-        log.info("GET /api/v1/attendances/employee/{} - Fetching attendances by employee", employeeId);
-
+    public ResponseEntity<List<AttendanceResponseDto>> getAttendancesByEmployee(@PathVariable UUID employeeId) {
         List<AttendanceResponseDto> attendances = attendanceService.getAttendancesByEmployee(employeeId);
-
-        log.info("Returning {} attendances for employee: {}", attendances.size(), employeeId);
         return ResponseEntity.ok(attendances);
     }
 
-    /**
-     * Get attendances by schedule
-     */
+    @Operation(summary = "Get attendances by schedule", description = "Retrieve all attendance records for a specific schedule.")
     @GetMapping("/schedule/{scheduleId}")
-    public ResponseEntity<List<AttendanceResponseDto>> getAttendancesBySchedule(
-            @PathVariable UUID scheduleId) {
-        log.info("GET /api/v1/attendances/schedule/{} - Fetching attendances by schedule", scheduleId);
-
+    public ResponseEntity<List<AttendanceResponseDto>> getAttendancesBySchedule(@PathVariable UUID scheduleId) {
         List<AttendanceResponseDto> attendances = attendanceService.getAttendancesBySchedule(scheduleId);
-
-        log.info("Returning {} attendances for schedule: {}", attendances.size(), scheduleId);
         return ResponseEntity.ok(attendances);
     }
 
-    /**
-     * Get attendances by date range
-     */
+    @Operation(summary = "Get attendances by date range", description = "Retrieve attendances between two dates.")
     @GetMapping("/date-range")
     public ResponseEntity<List<AttendanceResponseDto>> getAttendancesByDateRange(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        log.info("GET /api/v1/attendances/date-range - Fetching attendances from {} to {}", startDate, endDate);
+
+        if (endDate.isBefore(startDate)) {
+            return ResponseEntity.badRequest()
+                    .body(Collections.emptyList());
+        }
 
         List<AttendanceResponseDto> attendances = attendanceService.getAttendancesByDateRange(startDate, endDate);
-
-        log.info("Returning {} attendances between {} and {}", attendances.size(), startDate, endDate);
         return ResponseEntity.ok(attendances);
     }
 
-    /**
-     * Get attendances by employee and date
-     */
+    @Operation(summary = "Get attendances by employee and date", description = "Retrieve attendances for an employee on a specific date.")
     @GetMapping("/employee/{employeeId}/date")
     public ResponseEntity<List<AttendanceResponseDto>> getAttendancesByEmployeeAndDate(
             @PathVariable UUID employeeId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        log.info("GET /api/v1/attendances/employee/{}/date - Fetching attendances for employee on date: {}",
-                employeeId, date);
 
         List<AttendanceResponseDto> attendances = attendanceService.getAttendancesByEmployeeAndDate(employeeId, date);
-
-        log.info("Returning {} attendances for employee: {} on date: {}",
-                attendances.size(), employeeId, date);
         return ResponseEntity.ok(attendances);
     }
 
-    /**
-     * Get attendances by status
-     */
+    @Operation(summary = "Get attendances by status", description = "Retrieve all attendances with a given status (e.g., PRESENT, ABSENT, LATE).")
     @GetMapping("/status/{status}")
-    public ResponseEntity<List<AttendanceResponseDto>> getAttendancesByStatus(
-            @PathVariable String status) {
-        log.info("GET /api/v1/attendances/status/{} - Fetching attendances by status", status);
-
+    public ResponseEntity<List<AttendanceResponseDto>> getAttendancesByStatus(@PathVariable String status) {
         List<AttendanceResponseDto> attendances = attendanceService.getAttendancesByStatus(status);
-
-        log.info("Returning {} attendances with status: {}", attendances.size(), status);
         return ResponseEntity.ok(attendances);
     }
 
-    /**
-     * Get attendance summary by employee
-     */
+    @Operation(summary = "Get attendance summary", description = "Retrieve summarized attendance data for an employee.")
     @GetMapping("/employee/{employeeId}/summary")
-    public ResponseEntity<List<AttendanceSummaryDto>> getAttendanceSummaryByEmployee(
-            @PathVariable UUID employeeId) {
-        log.info("GET /api/v1/attendances/employee/{}/summary - Fetching attendance summary for employee",
-                employeeId);
-
+    public ResponseEntity<List<AttendanceSummaryDto>> getAttendanceSummaryByEmployee(@PathVariable UUID employeeId) {
         List<AttendanceSummaryDto> summary = attendanceService.getAttendanceSummaryByEmployee(employeeId);
-
-        log.info("Returning attendance summary with {} records for employee: {}", summary.size(), employeeId);
         return ResponseEntity.ok(summary);
     }
 
-    /**
-     * Get current attendance (checked in but not checked out)
-     */
+    @Operation(summary = "Get current attendance", description = "Retrieve current ongoing attendance (checked-in but not yet checked-out).")
     @GetMapping("/employee/{employeeId}/current")
     public ResponseEntity<AttendanceResponseDto> getCurrentAttendance(@PathVariable UUID employeeId) {
-        log.info("GET /api/v1/attendances/employee/{}/current - Fetching current attendance for employee",
-                employeeId);
-
-        Optional<AttendanceResponseDto> currentAttendance = attendanceService.getCurrentAttendance(employeeId);
-
-        if (currentAttendance.isPresent()) {
-            log.info("Found current attendance for employee: {}", employeeId);
-            return ResponseEntity.ok(currentAttendance.get());
-        } else {
-            log.info("No current attendance found for employee: {}", employeeId);
-            return ResponseEntity.noContent().build();
-        }
+        return attendanceService.getCurrentAttendance(employeeId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.noContent().build());
     }
 
-    // UPDATE operations
+    // --------------------------------------------------
+    // UPDATE OPERATIONS
+    // --------------------------------------------------
 
-    /**
-     * Update attendance record
-     */
+    @Operation(summary = "Update attendance record", description = "Update an existing attendance record.")
     @PutMapping("/{id}")
     public ResponseEntity<AttendanceResponseDto> updateAttendance(
             @PathVariable UUID id,
             @Valid @RequestBody AttendanceRequestDto requestDto) {
-        log.info("PUT /api/v1/attendances/{} - Updating attendance record", id);
 
-        AttendanceResponseDto updatedAttendance = attendanceService.updateAttendance(id, requestDto);
-
-        log.info("Successfully updated attendance record with ID: {}", id);
-        return ResponseEntity.ok(updatedAttendance);
+        AttendanceResponseDto updated = attendanceService.updateAttendance(id, requestDto);
+        return ResponseEntity.ok(updated);
     }
 
-    /**
-     * Update attendance status
-     */
+    @Operation(summary = "Update attendance status", description = "Update the status (e.g., PRESENT, ABSENT, LATE) of a specific attendance.")
     @PatchMapping("/{id}/status")
     public ResponseEntity<AttendanceResponseDto> updateAttendanceStatus(
             @PathVariable UUID id,
             @RequestParam String status) {
-        log.info("PATCH /api/v1/attendances/{}/status - Updating attendance status to: {}", id, status);
 
-        AttendanceResponseDto updatedAttendance = attendanceService.updateAttendanceStatus(id, status);
-
-        log.info("Successfully updated status for attendance record ID: {}", id);
-        return ResponseEntity.ok(updatedAttendance);
+        AttendanceResponseDto updated = attendanceService.updateAttendanceStatus(id, status);
+        return ResponseEntity.ok(updated);
     }
 
-    /**
-     * Mark attendance as late
-     */
+    @Operation(summary = "Mark attendance as late", description = "Mark a specific attendance record as late with an optional reason.")
     @PatchMapping("/{id}/late")
     public ResponseEntity<AttendanceResponseDto> markAsLate(
             @PathVariable UUID id,
             @RequestParam(required = false) String reason) {
-        log.info("PATCH /api/v1/attendances/{}/late - Marking attendance as late", id);
 
-        AttendanceResponseDto updatedAttendance = attendanceService.markAsLate(id, reason);
-
-        log.info("Successfully marked attendance ID: {} as LATE", id);
-        return ResponseEntity.ok(updatedAttendance);
+        AttendanceResponseDto updated = attendanceService.markAsLate(id, reason);
+        return ResponseEntity.ok(updated);
     }
 
-    // DELETE operations
+    // --------------------------------------------------
+    // DELETE OPERATIONS
+    // --------------------------------------------------
 
-    /**
-     * Delete attendance record
-     */
+    @Operation(summary = "Delete attendance", description = "Delete a specific attendance record by ID.")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAttendance(@PathVariable UUID id) {
-        log.info("DELETE /api/v1/attendances/{} - Deleting attendance record", id);
-
         attendanceService.deleteAttendance(id);
-
-        log.info("Successfully deleted attendance record with ID: {}", id);
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Delete all attendances for an employee
-     */
+    @Operation(summary = "Delete employee attendances", description = "Delete all attendance records for a specific employee.")
     @DeleteMapping("/employee/{employeeId}")
     public ResponseEntity<Void> deleteAttendancesByEmployee(@PathVariable UUID employeeId) {
-        log.info("DELETE /api/v1/attendances/employee/{} - Deleting all attendances for employee", employeeId);
-
         attendanceService.deleteAttendancesByEmployee(employeeId);
-
-        log.info("Successfully deleted all attendances for employee: {}", employeeId);
         return ResponseEntity.noContent().build();
     }
 
-    // UTILITY endpoints
+    // --------------------------------------------------
+    // UTILITY ENDPOINTS
+    // --------------------------------------------------
 
-    /**
-     * Check if attendance exists by ID
-     */
+    @Operation(summary = "Check attendance existence", description = "Check whether an attendance record exists by ID.")
     @GetMapping("/{id}/exists")
-    public ResponseEntity<Boolean> existsById(@PathVariable UUID id) {
-        log.debug("GET /api/v1/attendances/{}/exists - Checking attendance existence", id);
-
+    public ResponseEntity<Map<String, Boolean>> existsById(@PathVariable UUID id) {
         boolean exists = attendanceService.existsById(id);
-
-        return ResponseEntity.ok(exists);
+        return ResponseEntity.ok(Map.of("exists", exists));
     }
 
-    /**
-     * Get total attendance count
-     */
+    @Operation(summary = "Get total attendance count", description = "Retrieve the total number of attendance records.")
     @GetMapping("/count")
-    public ResponseEntity<Long> getAttendanceCount() {
-        log.debug("GET /api/v1/attendances/count - Getting total attendance count");
-
+    public ResponseEntity<Map<String, Long>> getAttendanceCount() {
         long count = attendanceService.getAttendanceCount();
-
-        return ResponseEntity.ok(count);
+        return ResponseEntity.ok(Map.of("count", count));
     }
 
-    /**
-     * Health check endpoint
-     */
+    @Operation(summary = "Health check", description = "Verify that the Attendance service is up and running.")
     @GetMapping("/health")
-    public ResponseEntity<String> health() {
-        log.debug("GET /api/v1/attendances/health - Health check");
-        return ResponseEntity.ok("Attendance Service is healthy");
+    public ResponseEntity<Map<String, String>> health() {
+        return ResponseEntity.ok(Map.of("status", "Attendance Service is healthy"));
     }
 }
