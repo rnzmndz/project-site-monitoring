@@ -1,5 +1,15 @@
 package site.renzoproject.employee_service.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -7,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import site.renzoproject.employee_service.dto.*;
@@ -20,365 +31,261 @@ import java.util.UUID;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/employee-schedules")
+@RequestMapping(value = "/api/v1/employee-schedules", produces = MediaType.APPLICATION_JSON_VALUE)
+@Tag(name = "Employee Schedule", description = "APIs for managing employee schedules")
+@SecurityRequirement(name = "bearerAuth") // Remove this if not using JWT
 public class EmployeeScheduleController {
 
     private final EmployeeScheduleService employeeScheduleService;
 
+    // -------------------------------------------------------------------------
     // CREATE operations
-
-    /**
-     * Create a new employee schedule
-     */
-    @PostMapping
+    // -------------------------------------------------------------------------
+    @Operation(
+            summary = "Create a new employee schedule",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    required = true,
+                    description = "Employee schedule creation request",
+                    content = @Content(
+                            schema = @Schema(implementation = EmployeeScheduleRequestDto.class),
+                            examples = @ExampleObject(value = """
+                {
+                  "description": "Morning shift - Team A",
+                  "startTime": "2025-11-01T08:00:00Z",
+                  "endTime": "2025-11-01T16:00:00Z",
+                  "type": "SHIFT",
+                  "status": "ACTIVE"
+                }
+                """)
+                    )
+            )
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Employee schedule created successfully",
+                    content = @Content(schema = @Schema(implementation = EmployeeScheduleResponseDto.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid input data")
+    })
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<EmployeeScheduleResponseDto> createEmployeeSchedule(
             @Valid @RequestBody EmployeeScheduleRequestDto requestDto) {
-        log.info("POST /api/v1/employee-schedules - Creating new employee schedule: {}",
-                requestDto.getDescription());
 
-        EmployeeScheduleResponseDto createdSchedule = employeeScheduleService.createEmployeeSchedule(requestDto);
-
-        log.info("Successfully created employee schedule with ID: {}", createdSchedule.getId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdSchedule);
+        log.info("Creating new employee schedule: {}", requestDto.getDescription());
+        EmployeeScheduleResponseDto created = employeeScheduleService.createEmployeeSchedule(requestDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    /**
-     * Bulk create employee schedules
-     */
-    @PostMapping("/bulk")
+    @Operation(summary = "Bulk create employee schedules")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Employee schedules created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data")
+    })
+    @PostMapping(value = "/bulk", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> bulkCreateEmployeeSchedules(
             @Valid @RequestBody List<EmployeeScheduleRequestDto> requestDtos) {
-        log.info("POST /api/v1/employee-schedules/bulk - Bulk creating {} employee schedules",
-                requestDtos.size());
 
+        log.info("Bulk creating {} employee schedules", requestDtos.size());
         employeeScheduleService.bulkCreateEmployeeSchedules(requestDtos);
-
-        log.info("Successfully bulk created {} employee schedules", requestDtos.size());
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+    // -------------------------------------------------------------------------
     // READ operations
-
-    /**
-     * Get employee schedule by ID
-     */
+    // -------------------------------------------------------------------------
+    @Operation(summary = "Get employee schedule by ID")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Employee schedule found",
+                    content = @Content(schema = @Schema(implementation = EmployeeScheduleResponseDto.class))),
+            @ApiResponse(responseCode = "404", description = "Employee schedule not found")
+    })
     @GetMapping("/{id}")
-    public ResponseEntity<EmployeeScheduleResponseDto> getEmployeeScheduleById(@PathVariable UUID id) {
-        log.info("GET /api/v1/employee-schedules/{} - Fetching employee schedule by ID", id);
+    public ResponseEntity<EmployeeScheduleResponseDto> getEmployeeScheduleById(
+            @Parameter(description = "ID of the schedule to retrieve", in = ParameterIn.PATH)
+            @PathVariable UUID id) {
 
         EmployeeScheduleResponseDto schedule = employeeScheduleService.getEmployeeScheduleById(id);
-
-        log.info("Successfully found employee schedule with ID: {}", id);
         return ResponseEntity.ok(schedule);
     }
 
-    /**
-     * Get all employee schedules with pagination
-     */
+    @Operation(summary = "Get all employee schedules with pagination")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved paginated employee schedules")
     @GetMapping
     public ResponseEntity<EmployeeSchedulePage> getAllEmployeeSchedules(
+            @Parameter(description = "Pagination and sorting parameters")
             @PageableDefault(size = 20, sort = "startTime") Pageable pageable) {
-        log.info("GET /api/v1/employee-schedules - Fetching all employee schedules with pagination: {}",
-                pageable);
 
-        EmployeeSchedulePage schedulePage = employeeScheduleService.getAllEmployeeSchedules(pageable);
-
-        log.info("Returning {} employee schedules out of {}",
-                schedulePage.getContent().size(), schedulePage.getTotalElements());
-        return ResponseEntity.ok(schedulePage);
+        EmployeeSchedulePage page = employeeScheduleService.getAllEmployeeSchedules(pageable);
+        return ResponseEntity.ok(page);
     }
 
-    /**
-     * Get all employee schedules (non-paginated)
-     */
+    @Operation(summary = "Get all employee schedules (non-paginated)")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved all employee schedules")
     @GetMapping("/all")
     public ResponseEntity<List<EmployeeScheduleResponseDto>> getAllEmployeeSchedules() {
-        log.info("GET /api/v1/employee-schedules/all - Fetching all employee schedules");
-
-        List<EmployeeScheduleResponseDto> schedules = employeeScheduleService.getAllEmployeeSchedules();
-
-        log.info("Returning {} employee schedules", schedules.size());
-        return ResponseEntity.ok(schedules);
+        return ResponseEntity.ok(employeeScheduleService.getAllEmployeeSchedules());
     }
 
-    /**
-     * Get employee schedules by type
-     */
+    @Operation(summary = "Get employee schedules by type")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved schedules by type")
     @GetMapping("/type/{scheduleType}")
     public ResponseEntity<List<EmployeeScheduleResponseDto>> getEmployeeSchedulesByType(
-            @PathVariable String scheduleType) {
-        log.info("GET /api/v1/employee-schedules/type/{} - Fetching employee schedules by type", scheduleType);
+            @Parameter(description = "Type of the schedule") @PathVariable String scheduleType) {
 
-        List<EmployeeScheduleResponseDto> schedules = employeeScheduleService.getEmployeeSchedulesByType(scheduleType);
-
-        log.info("Returning {} employee schedules with type: {}", schedules.size(), scheduleType);
-        return ResponseEntity.ok(schedules);
+        return ResponseEntity.ok(employeeScheduleService.getEmployeeSchedulesByType(scheduleType));
     }
 
-    /**
-     * Get employee schedules by status
-     */
+    @Operation(summary = "Get employee schedules by status")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved schedules by status")
     @GetMapping("/status/{status}")
     public ResponseEntity<List<EmployeeScheduleResponseDto>> getEmployeeSchedulesByStatus(
-            @PathVariable String status) {
-        log.info("GET /api/v1/employee-schedules/status/{} - Fetching employee schedules by status", status);
+            @Parameter(description = "Status of the schedule") @PathVariable String status) {
 
-        List<EmployeeScheduleResponseDto> schedules = employeeScheduleService.getEmployeeSchedulesByStatus(status);
-
-        log.info("Returning {} employee schedules with status: {}", schedules.size(), status);
-        return ResponseEntity.ok(schedules);
+        return ResponseEntity.ok(employeeScheduleService.getEmployeeSchedulesByStatus(status));
     }
 
-    /**
-     * Get employee schedules by date range
-     */
+    @Operation(summary = "Get schedules within a date range")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved schedules within date range")
     @GetMapping("/date-range")
     public ResponseEntity<List<EmployeeScheduleResponseDto>> getEmployeeSchedulesByDateRange(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        log.info("GET /api/v1/employee-schedules/date-range - Fetching employee schedules from {} to {}",
-                startDate, endDate);
 
-        List<EmployeeScheduleResponseDto> schedules = employeeScheduleService.getEmployeeSchedulesByDateRange(startDate, endDate);
-
-        log.info("Returning {} employee schedules between {} and {}", schedules.size(), startDate, endDate);
-        return ResponseEntity.ok(schedules);
+        return ResponseEntity.ok(employeeScheduleService.getEmployeeSchedulesByDateRange(startDate, endDate));
     }
 
-    /**
-     * Get employee schedules that overlap with time range
-     */
+    @Operation(summary = "Get schedules overlapping with a time range")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved overlapping schedules")
     @GetMapping("/overlapping")
     public ResponseEntity<List<EmployeeScheduleResponseDto>> getEmployeeSchedulesOverlapping(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant startTime,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant endTime) {
-        log.info("GET /api/v1/employee-schedules/overlapping - Fetching employee schedules overlapping with {} to {}",
-                startTime, endTime);
 
-        List<EmployeeScheduleResponseDto> schedules = employeeScheduleService.getEmployeeSchedulesOverlapping(startTime, endTime);
-
-        log.info("Returning {} employee schedules overlapping with the time range", schedules.size());
-        return ResponseEntity.ok(schedules);
+        return ResponseEntity.ok(employeeScheduleService.getEmployeeSchedulesOverlapping(startTime, endTime));
     }
 
-    /**
-     * Get active employee schedules (not cancelled)
-     */
+    @Operation(summary = "Get all active (non-cancelled) schedules")
     @GetMapping("/active")
     public ResponseEntity<List<EmployeeScheduleResponseDto>> getActiveEmployeeSchedules() {
-        log.info("GET /api/v1/employee-schedules/active - Fetching active employee schedules");
-
-        List<EmployeeScheduleResponseDto> schedules = employeeScheduleService.getActiveEmployeeSchedules();
-
-        log.info("Returning {} active employee schedules", schedules.size());
-        return ResponseEntity.ok(schedules);
+        return ResponseEntity.ok(employeeScheduleService.getActiveEmployeeSchedules());
     }
 
-    /**
-     * Get employee schedules summary
-     */
+    @Operation(summary = "Get summary of all employee schedules")
     @GetMapping("/summary")
     public ResponseEntity<List<EmployeeScheduleSummaryDto>> getEmployeeSchedulesSummary() {
-        log.info("GET /api/v1/employee-schedules/summary - Fetching employee schedules summary");
-
-        List<EmployeeScheduleSummaryDto> summary = employeeScheduleService.getEmployeeSchedulesSummary();
-
-        log.info("Returning employee schedules summary with {} records", summary.size());
-        return ResponseEntity.ok(summary);
+        return ResponseEntity.ok(employeeScheduleService.getEmployeeSchedulesSummary());
     }
 
-    /**
-     * Get employee schedules summary by type
-     */
+    @Operation(summary = "Get summary of employee schedules by type")
     @GetMapping("/summary/type/{scheduleType}")
     public ResponseEntity<List<EmployeeScheduleSummaryDto>> getEmployeeSchedulesSummaryByType(
-            @PathVariable String scheduleType) {
-        log.info("GET /api/v1/employee-schedules/summary/type/{} - Fetching employee schedules summary by type",
-                scheduleType);
+            @Parameter(description = "Type of the schedule") @PathVariable String scheduleType) {
 
-        List<EmployeeScheduleSummaryDto> summary = employeeScheduleService.getEmployeeSchedulesSummaryByType(scheduleType);
-
-        log.info("Returning employee schedules summary with {} records for type: {}", summary.size(), scheduleType);
-        return ResponseEntity.ok(summary);
+        return ResponseEntity.ok(employeeScheduleService.getEmployeeSchedulesSummaryByType(scheduleType));
     }
 
-    /**
-     * Get upcoming employee schedules
-     */
+    @Operation(summary = "Get upcoming employee schedules for the next N days")
     @GetMapping("/upcoming")
     public ResponseEntity<List<EmployeeScheduleResponseDto>> getUpcomingEmployeeSchedules(
+            @Parameter(description = "Number of days to look ahead (default: 7)")
             @RequestParam(defaultValue = "7") int days) {
-        log.info("GET /api/v1/employee-schedules/upcoming - Fetching upcoming employee schedules for next {} days",
-                days);
 
-        List<EmployeeScheduleResponseDto> schedules = employeeScheduleService.getUpcomingEmployeeSchedules(days);
-
-        log.info("Returning {} upcoming employee schedules for next {} days", schedules.size(), days);
-        return ResponseEntity.ok(schedules);
+        return ResponseEntity.ok(employeeScheduleService.getUpcomingEmployeeSchedules(days));
     }
 
+    // -------------------------------------------------------------------------
     // UPDATE operations
-
-    /**
-     * Update employee schedule
-     */
+    // -------------------------------------------------------------------------
+    @Operation(summary = "Update an existing employee schedule")
     @PutMapping("/{id}")
     public ResponseEntity<EmployeeScheduleResponseDto> updateEmployeeSchedule(
-            @PathVariable UUID id,
+            @Parameter(description = "ID of the schedule to update") @PathVariable UUID id,
             @Valid @RequestBody EmployeeScheduleRequestDto requestDto) {
-        log.info("PUT /api/v1/employee-schedules/{} - Updating employee schedule", id);
 
-        EmployeeScheduleResponseDto updatedSchedule = employeeScheduleService.updateEmployeeSchedule(id, requestDto);
-
-        log.info("Successfully updated employee schedule with ID: {}", id);
-        return ResponseEntity.ok(updatedSchedule);
+        return ResponseEntity.ok(employeeScheduleService.updateEmployeeSchedule(id, requestDto));
     }
 
-    /**
-     * Update employee schedule status
-     */
+    @Operation(summary = "Update employee schedule status")
     @PatchMapping("/{id}/status")
     public ResponseEntity<EmployeeScheduleResponseDto> updateEmployeeScheduleStatus(
-            @PathVariable UUID id,
+            @Parameter(description = "ID of the schedule to update") @PathVariable UUID id,
             @RequestParam String status) {
-        log.info("PATCH /api/v1/employee-schedules/{}/status - Updating employee schedule status to: {}",
-                id, status);
 
-        EmployeeScheduleResponseDto updatedSchedule = employeeScheduleService.updateEmployeeScheduleStatus(id, status);
-
-        log.info("Successfully updated status for employee schedule ID: {}", id);
-        return ResponseEntity.ok(updatedSchedule);
+        return ResponseEntity.ok(employeeScheduleService.updateEmployeeScheduleStatus(id, status));
     }
 
-    /**
-     * Approve employee schedule
-     */
+    @Operation(summary = "Approve an employee schedule")
     @PatchMapping("/{id}/approve")
-    public ResponseEntity<EmployeeScheduleResponseDto> approveEmployeeSchedule(@PathVariable UUID id) {
-        log.info("PATCH /api/v1/employee-schedules/{}/approve - Approving employee schedule", id);
+    public ResponseEntity<EmployeeScheduleResponseDto> approveEmployeeSchedule(
+            @Parameter(description = "ID of the schedule to approve") @PathVariable UUID id) {
 
-        EmployeeScheduleResponseDto approvedSchedule = employeeScheduleService.approveEmployeeSchedule(id);
-
-        log.info("Successfully approved employee schedule with ID: {}", id);
-        return ResponseEntity.ok(approvedSchedule);
+        return ResponseEntity.ok(employeeScheduleService.approveEmployeeSchedule(id));
     }
 
-    /**
-     * Cancel employee schedule
-     */
+    @Operation(summary = "Cancel an employee schedule")
     @PatchMapping("/{id}/cancel")
     public ResponseEntity<EmployeeScheduleResponseDto> cancelEmployeeSchedule(
-            @PathVariable UUID id,
+            @Parameter(description = "ID of the schedule to cancel") @PathVariable UUID id,
             @RequestParam(required = false) String reason) {
-        log.info("PATCH /api/v1/employee-schedules/{}/cancel - Cancelling employee schedule", id);
 
-        EmployeeScheduleResponseDto cancelledSchedule = employeeScheduleService.cancelEmployeeSchedule(id, reason);
-
-        log.info("Successfully cancelled employee schedule with ID: {}", id);
-        return ResponseEntity.ok(cancelledSchedule);
+        return ResponseEntity.ok(employeeScheduleService.cancelEmployeeSchedule(id, reason));
     }
 
-    /**
-     * Reschedule employee schedule
-     */
+    @Operation(summary = "Reschedule an employee schedule")
     @PatchMapping("/{id}/reschedule")
     public ResponseEntity<EmployeeScheduleResponseDto> rescheduleEmployeeSchedule(
-            @PathVariable UUID id,
+            @Parameter(description = "ID of the schedule to reschedule") @PathVariable UUID id,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant newStartTime,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant newEndTime) {
-        log.info("PATCH /api/v1/employee-schedules/{}/reschedule - Rescheduling employee schedule to {} - {}",
-                id, newStartTime, newEndTime);
 
-        EmployeeScheduleResponseDto rescheduledSchedule = employeeScheduleService.rescheduleEmployeeSchedule(id, newStartTime, newEndTime);
-
-        log.info("Successfully rescheduled employee schedule with ID: {}", id);
-        return ResponseEntity.ok(rescheduledSchedule);
+        return ResponseEntity.ok(employeeScheduleService.rescheduleEmployeeSchedule(id, newStartTime, newEndTime));
     }
 
+    // -------------------------------------------------------------------------
     // DELETE operations
-
-    /**
-     * Delete employee schedule
-     */
+    // -------------------------------------------------------------------------
+    @Operation(summary = "Delete employee schedule by ID")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteEmployeeSchedule(@PathVariable UUID id) {
-        log.info("DELETE /api/v1/employee-schedules/{} - Deleting employee schedule", id);
-
         employeeScheduleService.deleteEmployeeSchedule(id);
-
-        log.info("Successfully deleted employee schedule with ID: {}", id);
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Delete employee schedules by status
-     */
+    @Operation(summary = "Delete employee schedules by status")
     @DeleteMapping("/status/{status}")
     public ResponseEntity<Long> deleteEmployeeSchedulesByStatus(@PathVariable String status) {
-        log.info("DELETE /api/v1/employee-schedules/status/{} - Deleting employee schedules by status", status);
-
-        long deletedCount = employeeScheduleService.deleteEmployeeSchedulesByStatus(status);
-
-        log.info("Successfully deleted {} employee schedules with status: {}", deletedCount, status);
-        return ResponseEntity.ok(deletedCount);
+        long deleted = employeeScheduleService.deleteEmployeeSchedulesByStatus(status);
+        return ResponseEntity.ok(deleted);
     }
 
+    // -------------------------------------------------------------------------
     // UTILITY endpoints
-
-    /**
-     * Check if employee schedule exists by ID
-     */
+    // -------------------------------------------------------------------------
+    @Operation(summary = "Check if an employee schedule exists by ID")
     @GetMapping("/{id}/exists")
     public ResponseEntity<Boolean> existsById(@PathVariable UUID id) {
-        log.debug("GET /api/v1/employee-schedules/{}/exists - Checking employee schedule existence", id);
-
-        boolean exists = employeeScheduleService.existsById(id);
-
-        return ResponseEntity.ok(exists);
+        return ResponseEntity.ok(employeeScheduleService.existsById(id));
     }
 
-    /**
-     * Get total employee schedule count
-     */
+    @Operation(summary = "Get total employee schedule count")
     @GetMapping("/count")
     public ResponseEntity<Long> getEmployeeScheduleCount() {
-        log.debug("GET /api/v1/employee-schedules/count - Getting total employee schedule count");
-
-        long count = employeeScheduleService.getEmployeeScheduleCount();
-
-        return ResponseEntity.ok(count);
+        return ResponseEntity.ok(employeeScheduleService.getEmployeeScheduleCount());
     }
 
-    /**
-     * Get employee schedule count by status
-     */
+    @Operation(summary = "Get employee schedule count by status")
     @GetMapping("/count/status/{status}")
     public ResponseEntity<Long> getEmployeeScheduleCountByStatus(@PathVariable String status) {
-        log.debug("GET /api/v1/employee-schedules/count/status/{} - Getting employee schedule count by status", status);
-
-        long count = employeeScheduleService.getEmployeeScheduleCountByStatus(status);
-
-        return ResponseEntity.ok(count);
+        return ResponseEntity.ok(employeeScheduleService.getEmployeeScheduleCountByStatus(status));
     }
 
-    /**
-     * Get employee schedule count by type
-     */
+    @Operation(summary = "Get employee schedule count by type")
     @GetMapping("/count/type/{scheduleType}")
     public ResponseEntity<Long> getEmployeeScheduleCountByType(@PathVariable String scheduleType) {
-        log.debug("GET /api/v1/employee-schedules/count/type/{} - Getting employee schedule count by type", scheduleType);
-
-        long count = employeeScheduleService.getEmployeeScheduleCountByType(scheduleType);
-
-        return ResponseEntity.ok(count);
+        return ResponseEntity.ok(employeeScheduleService.getEmployeeScheduleCountByType(scheduleType));
     }
 
-    /**
-     * Health check endpoint
-     */
+    @Operation(summary = "Health check endpoint")
     @GetMapping("/health")
     public ResponseEntity<String> health() {
-        log.debug("GET /api/v1/employee-schedules/health - Health check");
         return ResponseEntity.ok("Employee Schedule Service is healthy");
     }
 }
