@@ -1,5 +1,12 @@
 package site.renzoproject.employee_service.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,181 +29,163 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/employees")
+@Tag(name = "Employee Management", description = "APIs for managing employees, their accounts, and employment details.")
 public class EmployeeController {
 
     private final EmployeeService employeeService;
 
-    /**
-     * Create a new employee
-     */
+    @Operation(
+            summary = "Create a new employee",
+            description = "Registers a new employee record and returns the created employee details.",
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "Employee created successfully",
+                            content = @Content(schema = @Schema(implementation = EmployeeResponseDto.class))),
+                    @ApiResponse(responseCode = "400", description = "Invalid input data", content = @Content)
+            }
+    )
     @PostMapping
     public ResponseEntity<EmployeeResponseDto> createEmployee(
             @Valid @RequestBody EmployeeRequestDto employeeRequestDto) {
-        log.info("POST /api/v1/employees - Creating new employee for account: {}",
-                employeeRequestDto.getAccountId());
-
+        log.info("POST /api/v1/employees - Creating new employee for account: {}", employeeRequestDto.getAccountId());
         EmployeeResponseDto createdEmployee = employeeService.createEmployee(employeeRequestDto);
-
-        log.info("Successfully created employee with ID: {}", createdEmployee.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(createdEmployee);
     }
 
-    /**
-     * Get all employees with pagination
-     */
+    @Operation(
+            summary = "Get all employees (paginated)",
+            description = "Retrieves all employees with pagination and sorting support.",
+            parameters = {
+                    @Parameter(name = "page", description = "Page number (0-based)", in = ParameterIn.QUERY),
+                    @Parameter(name = "size", description = "Page size", in = ParameterIn.QUERY),
+                    @Parameter(name = "sort", description = "Sort by property, e.g. lastName,asc", in = ParameterIn.QUERY)
+            },
+            responses = @ApiResponse(responseCode = "200", description = "List of employees",
+                    content = @Content(schema = @Schema(implementation = EmployeePage.class)))
+    )
     @GetMapping
     public ResponseEntity<EmployeePage> getAllEmployees(
             @PageableDefault(size = 20, sort = "lastName,firstName") Pageable pageable) {
-        log.info("GET /api/v1/employees - Fetching all employees with pageable: {}", pageable);
-
         EmployeePage employeePage = employeeService.getAllEmployees(pageable);
-
-        log.info("Returning {} employees out of {}",
-                employeePage.getContent().size(), employeePage.getTotalElements());
         return ResponseEntity.ok(employeePage);
     }
 
-    /**
-     * Get employee by ID
-     */
+    @Operation(
+            summary = "Get employee by ID",
+            description = "Fetches detailed information of a specific employee by their ID.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Employee found",
+                            content = @Content(schema = @Schema(implementation = EmployeeResponseDto.class))),
+                    @ApiResponse(responseCode = "404", description = "Employee not found", content = @Content)
+            }
+    )
     @GetMapping("/{id}")
     public ResponseEntity<EmployeeResponseDto> getEmployeeById(@PathVariable UUID id) {
-        log.info("GET /api/v1/employees/{} - Fetching employee by ID", id);
-
         EmployeeResponseDto employee = employeeService.getEmployeeById(id);
-
-        log.info("Successfully found employee with ID: {}", id);
         return ResponseEntity.ok(employee);
     }
 
-    /**
-     * Get employee by account ID
-     */
+    @Operation(
+            summary = "Get employee by Account ID",
+            description = "Fetches the employee record associated with a specific account.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Employee found",
+                            content = @Content(schema = @Schema(implementation = EmployeeResponseDto.class))),
+                    @ApiResponse(responseCode = "404", description = "Employee not found", content = @Content)
+            }
+    )
     @GetMapping("/account/{accountId}")
     public ResponseEntity<EmployeeResponseDto> getEmployeeByAccountId(@PathVariable UUID accountId) {
-        log.info("GET /api/v1/employees/account/{} - Fetching employee by account ID", accountId);
-
         EmployeeResponseDto employee = employeeService.getEmployeeByAccountId(accountId);
-
-        log.info("Successfully found employee with account ID: {}", accountId);
         return ResponseEntity.ok(employee);
     }
 
-    /**
-     * Update employee (full update)
-     */
+    @Operation(
+            summary = "Update employee (full update)",
+            description = "Updates all fields of an employee record.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Employee updated successfully",
+                            content = @Content(schema = @Schema(implementation = EmployeeResponseDto.class))),
+                    @ApiResponse(responseCode = "404", description = "Employee not found", content = @Content)
+            }
+    )
     @PutMapping("/{id}")
     public ResponseEntity<EmployeeResponseDto> updateEmployee(
             @PathVariable UUID id,
             @Valid @RequestBody EmployeeRequestDto employeeRequestDto) {
-        log.info("PUT /api/v1/employees/{} - Updating employee", id);
-
         EmployeeResponseDto updatedEmployee = employeeService.updateEmployee(id, employeeRequestDto);
-
-        log.info("Successfully updated employee with ID: {}", id);
         return ResponseEntity.ok(updatedEmployee);
     }
 
-    /**
-     * Partial update employee
-     */
+    @Operation(
+            summary = "Partial update employee",
+            description = "Partially updates an employee’s record (only provided fields are changed).",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Employee partially updated successfully",
+                            content = @Content(schema = @Schema(implementation = EmployeeResponseDto.class))),
+                    @ApiResponse(responseCode = "404", description = "Employee not found", content = @Content)
+            }
+    )
     @PatchMapping("/{id}")
     public ResponseEntity<EmployeeResponseDto> partialUpdateEmployee(
             @PathVariable UUID id,
             @RequestBody EmployeeRequestDto employeeRequestDto) {
-        log.info("PATCH /api/v1/employees/{} - Partially updating employee", id);
-
         EmployeeResponseDto updatedEmployee = employeeService.partialUpdateEmployee(id, employeeRequestDto);
-
-        log.info("Successfully partially updated employee with ID: {}", id);
         return ResponseEntity.ok(updatedEmployee);
     }
 
-    /**
-     * Delete employee
-     */
+    @Operation(
+            summary = "Delete employee",
+            description = "Deletes an employee record by ID.",
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "Employee deleted successfully"),
+                    @ApiResponse(responseCode = "404", description = "Employee not found", content = @Content)
+            }
+    )
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteEmployee(@PathVariable UUID id) {
-        log.info("DELETE /api/v1/employees/{} - Deleting employee", id);
-
         employeeService.deleteEmployee(id);
-
-        log.info("Successfully deleted employee with ID: {}", id);
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Check if employee exists by ID
-     */
+    @Operation(summary = "Check if employee exists by ID")
     @GetMapping("/{id}/exists")
     public ResponseEntity<Boolean> existsById(@PathVariable UUID id) {
-        log.debug("GET /api/v1/employees/{}/exists - Checking employee existence", id);
-
-        boolean exists = employeeService.existsById(id);
-
-        return ResponseEntity.ok(exists);
+        return ResponseEntity.ok(employeeService.existsById(id));
     }
 
-    /**
-     * Check if employee exists by account ID
-     */
+    @Operation(summary = "Check if employee exists by Account ID")
     @GetMapping("/account/{accountId}/exists")
     public ResponseEntity<Boolean> existsByAccountId(@PathVariable UUID accountId) {
-        log.debug("GET /api/v1/employees/account/{}/exists - Checking employee existence by account ID", accountId);
-
-        boolean exists = employeeService.existsByAccountId(accountId);
-
-        return ResponseEntity.ok(exists);
+        return ResponseEntity.ok(employeeService.existsByAccountId(accountId));
     }
 
-    /**
-     * Search employees by department
-     */
+    @Operation(summary = "Search employees by department")
     @GetMapping("/search/department")
     public ResponseEntity<List<EmployeeResponseDto>> getEmployeesByDepartment(
             @RequestParam String department) {
-        log.info("GET /api/v1/employees/search/department?department={} - Searching employees by department", department);
-
         List<EmployeeResponseDto> employees = employeeService.getEmployeesByDepartment(department);
-
-        log.info("Found {} employees in department: {}", employees.size(), department);
         return ResponseEntity.ok(employees);
     }
 
-    /**
-     * Search employees by job title
-     */
+    @Operation(summary = "Search employees by job title")
     @GetMapping("/search/job-title")
     public ResponseEntity<List<EmployeeResponseDto>> getEmployeesByJobTitle(
             @RequestParam String jobTitle) {
-        log.info("GET /api/v1/employees/search/job-title?jobTitle={} - Searching employees by job title", jobTitle);
-
         List<EmployeeResponseDto> employees = employeeService.getEmployeesByJobTitle(jobTitle);
-
-        log.info("Found {} employees with job title: {}", employees.size(), jobTitle);
         return ResponseEntity.ok(employees);
     }
 
-    /**
-     * Get employees hired after a specific date
-     */
+    @Operation(summary = "Get employees hired after a specific date")
     @GetMapping("/search/hired-after")
     public ResponseEntity<List<EmployeeResponseDto>> getEmployeesHiredAfter(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        log.info("GET /api/v1/employees/search/hired-after?date={} - Searching employees hired after date", date);
-
         List<EmployeeResponseDto> employees = employeeService.getEmployeesHiredAfter(date);
-
-        log.info("Found {} employees hired after: {}", employees.size(), date);
         return ResponseEntity.ok(employees);
     }
 
-    /**
-     * Health check endpoint
-     */
+    @Operation(summary = "Health check", description = "Simple endpoint to verify that the Employee Service is running.")
     @GetMapping("/health")
     public ResponseEntity<String> health() {
-        log.debug("GET /api/v1/employees/health - Health check");
         return ResponseEntity.ok("Employee Service is healthy");
     }
 }
