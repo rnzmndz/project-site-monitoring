@@ -1,37 +1,61 @@
 package site.renzoproject.employee_service.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter
-@Setter
-@Schema(description = "Generic pagination model for API responses.")
-public class CustomPage<T> {
+@Schema(description = "Generic paginated response wrapper")
+public class CustomPage<T> extends PageImpl<T> {
 
-    @Schema(
-            description = "List of items in the current page.",
-            requiredMode = Schema.RequiredMode.REQUIRED
-    )
-    private List<T> content;
+    public CustomPage(List<T> content, Pageable pageable, long total) {
+        super(content, pageable, total);
+    }
 
-    @Schema(
-            description = "Pagination details such as page number, size, and sorting order."
-    )
-    private Pageable pageable;
+    public CustomPage(List<T> content) {
+        super(content);
+    }
 
-    @Schema(
-            description = "Total number of items available across all pages.",
-            example = "125",
-            requiredMode = Schema.RequiredMode.REQUIRED
-    )
-    private long total;
+    @Override
+    @Schema(description = "Page content (list of data items)")
+    public List<T> getContent() {
+        return super.getContent();
+    }
+
+    @Override
+    @Schema(description = "Current page number (0-based)")
+    public int getNumber() {
+        return super.getNumber();
+    }
+
+    @Override
+    @Schema(description = "Number of elements per page")
+    public int getSize() {
+        return super.getSize();
+    }
+
+    @Override
+    @Schema(description = "Total number of elements across all pages")
+    public long getTotalElements() {
+        return super.getTotalElements();
+    }
+
+    @Override
+    @Schema(description = "Total number of pages")
+    public int getTotalPages() {
+        return super.getTotalPages();
+    }
+
+    @Override
+    @Schema(description = "Is this the first page?")
+    public boolean isFirst() {
+        return super.isFirst();
+    }
+
+    @Override
+    @Schema(description = "Is this the last page?")
+    public boolean isLast() {
+        return super.isLast();
+    }
 }
