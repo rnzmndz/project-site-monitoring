@@ -73,23 +73,28 @@ public class SecurityConfig {
 
     private static final Map<HttpMethod, Map<String, String>> SECURED_ENDPOINTS = Map.of(
             HttpMethod.GET, Map.of(
-                    "/api/v1/accounts", "ROLE_VIEW_ACCOUNT_LIST",
-                    "/api/v1/accounts/*", "ROLE_VIEW_ACCOUNT_DETAIL",
-                    "/api/v1/accounts/sorted", "ROLE_VIEW_ACCOUNT_LIST",
-                    "/api/v1/accounts/search", "ROLE_VIEW_ACCOUNT_LIST"
+                    "/api/v1/employees", "ROLE_VIEW_EMPLOYEE_LIST",
+                    "/api/v1/employees/*", "ROLE_VIEW_EMPLOYEE_DETAIL",
+                    "/api/v1/employees/*/exists", "ROLE_VIEW_EMPLOYEE_LIST",
+                    "/api/v1/employees/search/job-title", "ROLE_VIEW_EMPLOYEE_LIST",
+                    "/api/v1/employees/search/hired-after", "ROLE_VIEW_EMPLOYEE_LIST",
+                    "/api/v1/employees/search/department", "ROLE_VIEW_EMPLOYEE_LIST",
+                    "/api/v1/employees/health", "ROLE_VIEW_EMPLOYEE_LIST",
+                    "/api/v1/employees/account/*", "ROLE_VIEW_EMPLOYEE_LIST",
+                    "/api/v1/employees/account/*/exists", "ROLE_VIEW_EMPLOYEE_LIST"
+                    ),
+            HttpMethod.POST, Map.of(
+                    "/api/v1/employees", "ROLE_CREATE_EMPLOYEE"
             ),
-            HttpMethod.POST, Map.of("/api/v1/accounts", "ROLE_CREATE_ACCOUNT"),
             HttpMethod.PATCH, Map.of(
-                    "/api/v1/accounts/*/suspend", "ROLE_ACCOUNT_UPDATE_STATUS",
-                    "/api/v1/accounts/*/status", "ROLE_ACCOUNT_UPDATE_STATUS",
-                    "/api/v1/accounts/*/enable", "ROLE_ACCOUNT_UPDATE_STATUS",
-                    "/api/v1/accounts/*/disable", "ROLE_ACCOUNT_UPDATE_STATUS"
+                    "/api/v1/employees/*", "ROLE_EMPLOYEE_UPDATE"
+
             ),
             HttpMethod.PUT, Map.of(
-                    "/api/v1/accounts/*", "ROLE_ACCOUNT_UPDATE"
+                    "/api/v1/employees/*", "ROLE_EMPLOYEE_UPDATE"
             ),
             HttpMethod.DELETE, Map.of(
-                    "/api/v1/accounts/*", "ROLE_ACCOUNT_DELETE"
+                    "/api/v1/employees/*", "ROLE_EMPLOYEE_DELETE"
             )
     );
 }
