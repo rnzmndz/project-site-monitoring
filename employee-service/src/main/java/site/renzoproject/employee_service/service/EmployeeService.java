@@ -43,10 +43,14 @@ public class EmployeeService {
         }
 
         // Validate account exists
-        validateAccountExists(employeeRequestDto.getAccountId());
+        AccountResponseDto accountResponseDto = validateAccountExists(employeeRequestDto.getAccountId());
 
         Employee employee = employeeMapper.toEntity(employeeRequestDto);
         employee.setId(UUID.randomUUID());
+        employee.setFirstName(accountResponseDto.getFirstName());
+        employee.setMiddleName(accountResponseDto.getMiddleName());
+        employee.setLastName(accountResponseDto.getLastName());
+        employee.setNameSuffix(accountResponseDto.getNameSuffix());
 
         Employee savedEmployee = employeeRepository.save(employee);
         log.info("Successfully created employee with ID: {}", savedEmployee.getId());
@@ -244,7 +248,7 @@ public class EmployeeService {
     /**
      * Validate that account exists in account service
      */
-    private void validateAccountExists(UUID accountId) {
+    private AccountResponseDto validateAccountExists(UUID accountId) {
         log.info("Validating account existence for account ID: {}", accountId);
 
         try {
@@ -253,6 +257,7 @@ public class EmployeeService {
                 throw new RuntimeException("Account not found with id: " + accountId);
             }
             log.debug("Account validation successful for account ID: {}", accountId);
+            return accountResponse;
         } catch (Exception e) {
             log.error("Error validating account with ID: {}", accountId, e);
             throw new RuntimeException("Account validation failed for id: " + accountId, e);
