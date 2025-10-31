@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.util.LinkedMultiValueMap;
@@ -203,9 +204,14 @@ public class AuthController {
     }
 
     @GetMapping("/session")
-    public ResponseEntity<?> checkSession(HttpServletRequest request) {
-        // If JWT is valid, return user info or just authenticated = true
-        return ResponseEntity.ok(Map.of("authenticated", true));
+    public ResponseEntity<?> checkSession() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        boolean isAuthenticated = authentication != null &&
+                authentication.isAuthenticated() &&
+                !"anonymousUser".equals(authentication.getPrincipal());
+
+        return ResponseEntity.ok(Map.of("authenticated", isAuthenticated));
     }
 
 //    @GetMapping("/{userId}/username")
