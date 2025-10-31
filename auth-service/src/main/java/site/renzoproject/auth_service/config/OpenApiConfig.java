@@ -26,8 +26,8 @@ public class OpenApiConfig {
                         .version("1.0.0")
                         .description("API for authentication and user management"))
                 .servers(List.of(
-                        new Server().url("http://localhost:8080").description("Development Server"),
-                        new Server().url("https://api.renzoproject.site").description("Production Server")
+                        new Server().url("https://api.renzoproject.site").description("Production Server"),
+                        new Server().url("http://localhost:8080").description("Development Server")
                 ));
     }
 }
