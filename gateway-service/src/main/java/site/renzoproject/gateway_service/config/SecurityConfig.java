@@ -29,18 +29,18 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
-//                        .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-//                        .pathMatchers(
-//                                "/public/**",
-//                                "/auth/login", "/auth/register", "/auth/refresh", "/auth/session",
-//                                "/v3/api-docs/**", "/api-docs/**",
-//                                "/swagger-ui.html",
-//                                "/swagger-ui/**",
-//                                "/webjars/swagger-ui/**"
-//                        ).permitAll()
-                                .pathMatchers(HttpMethod.GET, "/employee-service/v3/api-docs").permitAll()
-//                        .anyExchange().authenticated()
-                                .anyExchange().permitAll()
+                        .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .pathMatchers(
+                                "/",
+                                "/public/**",
+                                "/auth/login", "/auth/register", "/auth/refresh", "/auth/session",
+                                "/v3/api-docs/**", "/api-docs/**",
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/webjars/swagger-ui/**"
+                        ).permitAll()
+                        .pathMatchers(HttpMethod.GET, "/employee-service/v3/api-docs").permitAll()
+                        .anyExchange().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
                 .exceptionHandling(ex -> ex
