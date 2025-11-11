@@ -55,9 +55,9 @@ public class EmployeeController {
             summary = "Get all employees (paginated)",
             description = "Retrieves all employees with pagination and sorting support.",
             parameters = {
-                    @Parameter(name = "page", description = "Page number (0-based)", in = ParameterIn.QUERY),
-                    @Parameter(name = "size", description = "Page size", in = ParameterIn.QUERY),
-                    @Parameter(name = "sort", description = "Sort by property, e.g. lastName,asc", in = ParameterIn.QUERY)
+                    @Parameter(name = "page", description = "Page number (0-based)", in = ParameterIn.QUERY, schema = @Schema(type = "integer")),
+                    @Parameter(name = "size", description = "Page size", in = ParameterIn.QUERY, schema = @Schema(type = "integer")),
+                    @Parameter(name = "sort", description = "Sort by property, e.g. lastName,asc", in = ParameterIn.QUERY, schema = @Schema(type = "string"))
             },
             responses = @ApiResponse(responseCode = "200", description = "List of employees",
                     content = @Content(schema = @Schema(implementation = EmployeePage.class)))
