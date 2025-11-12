@@ -15,11 +15,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
-import site.renzoproject.account_service.dto.AccountCreateDto;
-import site.renzoproject.account_service.dto.AccountPage;
-import site.renzoproject.account_service.dto.AccountResponseDto;
-import site.renzoproject.account_service.dto.AccountUpdateDto;
+import org.springframework.web.server.ResponseStatusException;
+import site.renzoproject.account_service.dto.*;
 import site.renzoproject.account_service.model.AccountStatus;
 import site.renzoproject.account_service.service.AccountService;
 
@@ -65,6 +66,42 @@ public class AccountController {
         AccountResponseDto response = accountService.getAccountById(id);
         return ResponseEntity.ok(response);
     }
+
+    @Operation(
+            summary = "Get authenticated user's account details",
+            description = "Retrieves the details of the currently authenticated user based on the JWT token."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Successfully retrieved user account details",
+                    content = @Content(schema = @Schema(implementation = MyAccountDetails.class))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized – No valid JWT token found in security context"
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error"
+            )
+    })
+    @GetMapping("/user-info")
+    public MyAccountDetails getMyAccountDetails(Authentication authentication) {
+        if (authentication instanceof JwtAuthenticationToken jwtAuth) {
+            Jwt jwt = jwtAuth.getToken();
+            return MyAccountDetails.builder()
+                    .userId(jwt.getClaim("sub"))
+                    .username(jwt.getClaim("preferred_username"))
+                    .fullName(jwt.getClaim("name"))
+                    .firstName(jwt.getClaim("given_name"))
+                    .lastName(jwt.getClaim("family_name"))
+                    .email(jwt.getClaim("email"))
+                    .build();
+        }
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No JWT found in security context");
+    }
+
 
     @Operation(summary = "Get all accounts", description = "Retrieves a paginated list of all active accounts")
     @ApiResponses({
