@@ -110,7 +110,7 @@ public class AccountController {
                     content = @Content(schema = @Schema(implementation = AccountPage.class))),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @GetMapping
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AccountPage> getAllAccounts(
             @Parameter(description = "Page number (0-based)", example = "0")
             @RequestParam(defaultValue = "0") int page,
