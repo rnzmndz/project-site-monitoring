@@ -58,7 +58,7 @@ public class AccountController {
             @ApiResponse(responseCode = "404", description = "Account not found"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @GetMapping("/{id}")
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AccountResponseDto> getAccountById(
             @Parameter(description = "Account ID", example = "123e4567-e89b-12d3-a456-426614174000")
             @PathVariable UUID id) {
