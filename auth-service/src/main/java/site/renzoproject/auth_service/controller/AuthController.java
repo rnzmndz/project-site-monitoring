@@ -214,14 +214,14 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("authenticated", isAuthenticated));
     }
 
-//    @GetMapping("/{userId}/username")
-//    public ResponseEntity<String> getUsername(@PathVariable String userId) {
-//        try {
-//            String username = keycloakService.getUsername(userId);
-//            return ResponseEntity.ok(username);
-//        } catch (Exception e) {
-//            return ResponseEntity.notFound().build();
-//        }
-//    }
+    @GetMapping("/{userId}/username")
+    public ResponseEntity<String> getUsername(@PathVariable String userId) {
+        try {
+            String username = keycloakService.getUsername(userId);
+            return ResponseEntity.ok(username);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 
 }
