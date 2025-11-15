@@ -46,7 +46,7 @@ public class AuthController {
     private final RestTemplate restTemplate = new RestTemplate();
 
     @PostMapping(value = "/login", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<TokenResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         // Build form data
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("grant_type", "password");
@@ -59,12 +59,11 @@ public class AuthController {
         // Build request entity
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(formData, headers);
 
         // Send the request
         ResponseEntity<TokenResponse> response = restTemplate.postForEntity(
                 tokenUri,
-                httpEntity,
+                new HttpEntity<>(formData, headers),
                 TokenResponse.class
         );
 
@@ -78,7 +77,7 @@ public class AuthController {
                     .secure(true)
                     .sameSite("None")
                     .path("/")
-                    .maxAge(Duration.ofMinutes(2))
+                    .maxAge(Duration.ofMinutes(10))
                     .build();
 
             ResponseCookie refreshCookie = ResponseCookie.from("REFRESH_TOKEN", tokenResponse.getRefresh_token())
@@ -92,11 +91,11 @@ public class AuthController {
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
                     .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
-                    .build();
+                    .body(Map.of("status", "success"));
         }
 
-//        return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("error", "Invalid credentials"));
     }
 
     @PostMapping("/register")
@@ -137,9 +136,12 @@ public class AuthController {
 //    }
 
     @PostMapping("/refresh")
-    public ResponseEntity<Void> refreshToken(@CookieValue(name = "REFRESH_TOKEN", required = false) String refreshToken) {
+    public ResponseEntity<?> refreshToken(
+            @CookieValue(name = "REFRESH_TOKEN", required = false) String refreshToken) {
+
         if (refreshToken == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Missing refresh token"));
         }
 
         // Prepare form data
@@ -151,11 +153,10 @@ public class AuthController {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(formData, headers);
 
         ResponseEntity<TokenResponse> response = restTemplate.postForEntity(
                 tokenUri,
-                httpEntity,
+                new HttpEntity<>(formData, headers),
                 TokenResponse.class
         );
 
@@ -165,18 +166,18 @@ public class AuthController {
             ResponseCookie accessCookie = ResponseCookie.from("ACCESS_TOKEN", tokenResponse.getAccess_token())
                     .httpOnly(true)
                     .secure(true)
-                    .sameSite("None") // Set Strict if prod
-//                    .sameSite("Lax") // for dev mode
+                    .sameSite("None")
                     .path("/")
-                    .maxAge(Duration.ofMinutes(2))
+                    .maxAge(Duration.ofMinutes(10))
                     .build();
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
-                    .build();
+                    .body(Map.of("status", "refreshed"));
         }
 
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("error", "Invalid refresh token"));
     }
 
     @PostMapping("/logout")
