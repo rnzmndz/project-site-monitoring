@@ -11,6 +11,8 @@ import org.springframework.security.config.annotation.web.reactive.EnableWebFlux
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.ServerAuthenticationEntryPoint;
+import org.springframework.web.reactive.config.CorsRegistry;
+import org.springframework.web.reactive.config.WebFluxConfigurer;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
@@ -27,6 +29,7 @@ public class SecurityConfig {
     public SecurityWebFilterChain filterChain(ServerHttpSecurity http) {
         http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
+                .cors(Customizer.withDefaults())
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .pathMatchers(
@@ -100,4 +103,21 @@ public class SecurityConfig {
             return response.writeWith(Mono.just(buffer));
         };
     }
+
+
+// We can remove if this wont work
+//    @Bean
+//    public WebFluxConfigurer corsConfigurer() {
+//        return new WebFluxConfigurer() {
+//            @Override
+//            public void addCorsMappings(CorsRegistry registry) {
+//                registry.addMapping("/**")
+//                        .allowedOrigins("https://localhost:4200")
+//                        .allowedMethods("GET","POST","PUT","DELETE","OPTIONS")
+//                        .allowedHeaders("*")
+//                        .allowCredentials(true)
+//                        .exposedHeaders("Set-Cookie");
+//            }
+//        };
+//    }
 }
