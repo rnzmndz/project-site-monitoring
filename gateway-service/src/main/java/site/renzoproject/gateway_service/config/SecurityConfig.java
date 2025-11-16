@@ -11,8 +11,11 @@ import org.springframework.security.config.annotation.web.reactive.EnableWebFlux
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.ServerAuthenticationEntryPoint;
+<<<<<<< HEAD
 import org.springframework.web.reactive.config.CorsRegistry;
 import org.springframework.web.reactive.config.WebFluxConfigurer;
+=======
+>>>>>>> parent of d1101e3 (add corsconfig)
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
@@ -28,6 +31,10 @@ public class SecurityConfig {
     @Bean
     public SecurityWebFilterChain filterChain(ServerHttpSecurity http) {
         http
+<<<<<<< HEAD
+=======
+                .cors(Customizer.withDefaults())
+>>>>>>> parent of d1101e3 (add corsconfig)
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .cors(Customizer.withDefaults())
                 .authorizeExchange(exchanges -> exchanges
