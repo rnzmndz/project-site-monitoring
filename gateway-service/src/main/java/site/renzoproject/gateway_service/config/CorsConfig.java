@@ -1,4 +1,4 @@
-package site.renzoproject.auth_service.config;
+package site.renzoproject.gateway_service.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
