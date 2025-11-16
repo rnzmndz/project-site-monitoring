@@ -2,10 +2,7 @@ package site.renzoproject.auth_service.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -31,6 +28,13 @@ public class RegisterRequest {
     )
     @Schema(description = "User's password", example = "Password123", required = true)
     private String password;
+
+    @NotBlank(message = "Email cannot be blank")
+    @Email(message = "Invalid email format")
+    @Size(max = 100, message = "Email must be less than 100 characters")
+    @Schema(description = "User's email address", example = "user@example.com", required = true)
+    private String email;
+
 
     @NotBlank(message = "Role cannot be blank")
     @Schema(description = "User role", example = "VIEW_ACCOUNT_DETAIL")
