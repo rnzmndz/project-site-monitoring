@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import site.renzoproject.employee_service.dto.EmployeePage;
@@ -62,7 +63,7 @@ public class EmployeeController {
             responses = @ApiResponse(responseCode = "200", description = "List of employees",
                     content = @Content(schema = @Schema(implementation = EmployeePage.class)))
     )
-    @GetMapping
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<EmployeePage> getAllEmployees(
             @PageableDefault(size = 20, sort = "lastName,firstName") Pageable pageable) {
         EmployeePage employeePage = employeeService.getAllEmployees(pageable);
@@ -78,7 +79,7 @@ public class EmployeeController {
                     @ApiResponse(responseCode = "404", description = "Employee not found", content = @Content)
             }
     )
-    @GetMapping("/{id}")
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<EmployeeResponseDto> getEmployeeById(@PathVariable UUID id) {
         EmployeeResponseDto employee = employeeService.getEmployeeById(id);
         return ResponseEntity.ok(employee);
@@ -93,7 +94,7 @@ public class EmployeeController {
                     @ApiResponse(responseCode = "404", description = "Employee not found", content = @Content)
             }
     )
-    @GetMapping("/account/{accountId}")
+    @GetMapping(value = "/account/{accountId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<EmployeeResponseDto> getEmployeeByAccountId(@PathVariable UUID accountId) {
         EmployeeResponseDto employee = employeeService.getEmployeeByAccountId(accountId);
         return ResponseEntity.ok(employee);
@@ -148,19 +149,19 @@ public class EmployeeController {
     }
 
     @Operation(summary = "Check if employee exists by ID")
-    @GetMapping("/{id}/exists")
+    @GetMapping(value = "/{id}/exists", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Boolean> existsById(@PathVariable UUID id) {
         return ResponseEntity.ok(employeeService.existsById(id));
     }
 
     @Operation(summary = "Check if employee exists by Account ID")
-    @GetMapping("/account/{accountId}/exists")
+    @GetMapping(value = "/account/{accountId}/exists", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Boolean> existsByAccountId(@PathVariable UUID accountId) {
         return ResponseEntity.ok(employeeService.existsByAccountId(accountId));
     }
 
     @Operation(summary = "Search employees by department")
-    @GetMapping("/search/department")
+    @GetMapping(value = "/search/department", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<EmployeeResponseDto>> getEmployeesByDepartment(
             @RequestParam String department) {
         List<EmployeeResponseDto> employees = employeeService.getEmployeesByDepartment(department);
@@ -168,7 +169,7 @@ public class EmployeeController {
     }
 
     @Operation(summary = "Search employees by job title")
-    @GetMapping("/search/job-title")
+    @GetMapping(value = "/search/job-title", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<EmployeeResponseDto>> getEmployeesByJobTitle(
             @RequestParam String jobTitle) {
         List<EmployeeResponseDto> employees = employeeService.getEmployeesByJobTitle(jobTitle);
@@ -176,7 +177,7 @@ public class EmployeeController {
     }
 
     @Operation(summary = "Get employees hired after a specific date")
-    @GetMapping("/search/hired-after")
+    @GetMapping(value = "/search/hired-after", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<EmployeeResponseDto>> getEmployeesHiredAfter(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         List<EmployeeResponseDto> employees = employeeService.getEmployeesHiredAfter(date);
@@ -184,7 +185,7 @@ public class EmployeeController {
     }
 
     @Operation(summary = "Health check", description = "Simple endpoint to verify that the Employee Service is running.")
-    @GetMapping("/health")
+    @GetMapping(value = "/health", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> health() {
         return ResponseEntity.ok("Employee Service is healthy");
     }
