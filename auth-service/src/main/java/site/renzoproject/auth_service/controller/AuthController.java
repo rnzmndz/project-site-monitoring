@@ -170,9 +170,17 @@ public class AuthController {
                     .path("/")
                     .maxAge(Duration.ofMinutes(10))
                     .build();
+            ResponseCookie refreshCookie = ResponseCookie.from("REFRESH_TOKEN", tokenResponse.getRefresh_token())
+                    .httpOnly(true)
+                    .secure(true)
+                    .sameSite("None")
+                    .path("/")
+                    .maxAge(Duration.ofDays(7))
+                    .build();
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
+                    .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
                     .body(Map.of("status", "refreshed"));
         }
 
